@@ -71,28 +71,38 @@ class ScriptRunner:
 
         ## Action setup 
         # action for adding a script
-        self.add_action = QAction(QIcon(":plugins/scriptrunner/icon.png"),
+        self.add_action = QAction(QIcon(":plugins/scriptrunner/add_icon"),
                 "Add Script", self.mw)
         #self.add_action.setIconText('Add script')
         self.toolbar.addAction(self.add_action)
         QObject.connect(self.add_action, SIGNAL("triggered()"), self.add_script)
 
         # action for running a script
-        self.run_action = QAction(QIcon(":plugins/scriptrunner/icon.png"),
+        self.run_action = QAction(QIcon(":plugins/scriptrunner/run_icon"),
                 "Run Script", self.mw)
         #self.run_action.setIconText('Run script')
         self.toolbar.addAction(self.run_action)
         QObject.connect(self.run_action, SIGNAL("triggered()"), self.run_script)
 
         # action for getting info about a script
-        self.info_action = QAction(QIcon(":plugins/scriptrunner/icon.png"),
+        self.info_action = QAction(QIcon(":plugins/scriptrunner/info_icon"),
                 "Script Info", self.mw)
         #self.info_action.setIconText('Script Info')
         self.toolbar.addAction(self.info_action)
         QObject.connect(self.info_action, SIGNAL("triggered()"), self.info)
 
-        #jself.action_group.addAction(self.add_action)
-        #jself.action_group.addAction(self.info_action)
+
+        # action for reloading a script
+        self.reload_action = QAction(QIcon(":plugins/scriptrunner/reload_icon"),
+                "Reload Script", self.mw)
+        self.toolbar.addAction(self.reload_action)
+        QObject.connect(self.reload_action, SIGNAL("triggered()"), self.reload_script)
+
+        # action for removing a script
+        self.remove_action = QAction(QIcon(":plugins/scriptrunner/cancel_icon"),
+                "Remove Script", self.mw)
+        self.toolbar.addAction(self.remove_action)
+        QObject.connect(self.remove_action, SIGNAL("triggered()"), self.remove_script)
 #
 #
 #        self.toolbar.addWidget(self.action_group)
@@ -149,7 +159,16 @@ class ScriptRunner:
 
 
     def remove_script(self):
-        QMessageBox.information(None, "Remove", "Remove script was clicked")
+        item = self.scriptList.currentItem()
+        if item != None:
+            result = QMessageBox.question(None, "Remove Script", 
+                    "Are you sure you want to remove %s?" % item.text(),
+                    QMessageBox.Yes, QMessageBox.No)
+            if result == QMessageBox.Yes:
+                self.scriptList.takeItem(self.scriptList.currentRow())
+
+    def reload_script(self):
+        QMessageBox.information(None, "Reload", "Reload script was clicked")
 
     def info(self):
         item = self.scriptList.currentItem()
