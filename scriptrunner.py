@@ -17,6 +17,7 @@
 
 import sys
 import os
+import re
 import inspect
 
 # Import the PyQt and QGIS libraries
@@ -27,6 +28,8 @@ from qgis.core import *
 import resources
 # Import the code for the dialog
 from scriptrunner_mainwindow import ScriptRunnerMainWindow
+# Import the help module
+from scriptrunner_help import htmlhelp
 
 class ScriptRunner:
 
@@ -110,8 +113,11 @@ class ScriptRunner:
         self.tabWidget = QTabWidget()
         self.textBrowser = QTextBrowser()
         self.textBrowserSource = QTextBrowser()
+        self.textBrowserHelp = QTextBrowser()
+        self.textBrowserHelp.setHtml(htmlhelp())
         self.tabWidget.addTab(self.textBrowser, "Info")
         self.tabWidget.addTab(self.textBrowserSource, "Source")
+        self.tabWidget.addTab(self.textBrowserHelp, "Help")
         self.splitter.addWidget(self.tabWidget)
         # set the sizes for the splitter
         split_size = [150, 350]
@@ -120,8 +126,8 @@ class ScriptRunner:
 #
 #        # add test data
 #
-        item = QListWidgetItem('loader.py', self.scriptList)
-        item.setToolTip('/Users/gsherman/qgis_scripts/loader.py')
+#        item = QListWidgetItem('loader.py', self.scriptList)
+#        item.setToolTip('/Users/gsherman/qgis_scripts/loader.py')
 #
     def unload(self):
         # Remove the plugin menu item and icon
@@ -130,11 +136,17 @@ class ScriptRunner:
 
     def add_script(self):
         script = QFileDialog.getOpenFileName(None, "Add a Python Script", "", "Python scripts (*.py)")
-        (script_dir, script_name) = os.path.split(str(script))
-        item = QListWidgetItem(script_name, self.scriptList)
-        item.setToolTip(script)
-        QMessageBox.information(None, "Add", script)
-        self.main_window.statusbar.showMessage("Added script: %s" % script)
+        # check to see if we have a run method without importing the script
+        if self.have_run_method(script):
+            (script_dir, script_name) = os.path.split(str(script))
+            item = QListWidgetItem(script_name, self.scriptList)
+            item.setToolTip(script)
+            self.main_window.statusbar.showMessage("Added script: %s" % script)
+        else:
+            QMessageBox.information(None, "Error", "Your script must have a run_script() function defined. Adding the script failed.")
+            self.main_window.statusbar.showMessage("Failed to add script: %s - no run_script function" % script_name)
+
+
 
     def remove_script(self):
         QMessageBox.information(None, "Remove", "Remove script was clicked")
@@ -169,14 +181,12 @@ class ScriptRunner:
               modinfo = inspect.getmodule(cls[1])
               if modinfo.__name__ == user_module:
                   html += "<li>%s</li>" % cls[0]
-                  #print "  ", cls[0] #, modinfo.__name__, inspect.getmodule(c[1])
-                  #html += "&nbsp;&nbsp;&nbsp;<b>Methods:</b><br/><ul>"
                   html += "<ul>"
                   for meth in inspect.getmembers(cls[1], inspect.ismethod):
                     html+= "<li>%s</li>" % meth[0]
                   html += "</ul></ul>"
             functions = inspect.getmembers(sys.modules[user_module], inspect.isfunction)
-            html += "<h4>Functions and Methods in %s</h4><ul>" % script_name
+            html += "<h4>Functions in %s</h4><ul>" % script_name
             for func in functions:
                 modinfo = inspect.getmodule(func[1])
                 if modinfo.__name__ == user_module:
@@ -193,33 +203,31 @@ class ScriptRunner:
         if item != None:
             script = item.toolTip()
             self.main_window.statusbar.showMessage("Running script: %s" % script)
-            #QMessageBox.information(None, "Run", "This would run " + script)
+    
             # get the path and add it to sys.path
             (script_dir, script_name) = os.path.split(str(script))
-            #QMessageBox.information(None, "Run", "Script dir / name " + script_dir + " / " + script_name)
+   
             if script_dir not in sys.path:
                 sys.path.append(script_dir)
             (user_module, ext) = os.path.splitext(script_name)
-            #QMessageBox.information(None, "Run", "Imported Module " + user_module)
+  
             user_script = __import__(user_module)
-            #QMessageBox.information(None, "Run", str(dir(user_script)))
-            user_script.run(self.iface)
+ 
+            user_script.run_script(self.iface)
             self.main_window.statusbar.showMessage("Completed script: %s" % script)
 
-
-
-
-    # run method that performs all the real work
+    # Bring up the main window
     def run(self):
-
-        # show the dialog
+        # show the main window
         self.mw.show()
-        #result = self.dlg.exec_()
-        ## See if OK was pressed
-        #if result == 1:
-        #    # do something useful (delete the line containing pass and
-        #    # substitute with your code
-        #    sys.path.append('/Users/gsherman/qgis_scripts')
-        #    import loader
-        #    loader.run(self.iface)
-        #    self.dlg.reject()
+
+    def have_run_method(self, script_path):
+        script = open(script_path, 'r')
+        pattern = re.compile('\s*def run_script\(*')
+        run_method = False
+        for line in script:
+            if pattern.search(line):
+                run_method = True
+                break
+        script.close()
+        return run_method

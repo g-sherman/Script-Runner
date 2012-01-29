@@ -21,7 +21,7 @@
 
 PLUGINNAME = scriptrunner
 
-PY_FILES = scriptrunner.py scriptrunnerdialog.py __init__.py
+PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py
 
 EXTRAS = icon.png 
 

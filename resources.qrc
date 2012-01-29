@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/plugins/scriptrunner" >
         <file>icon.png</file>
+        <file alias="help.html">resources/help.html</file>
     </qresource>
 </RCC>
