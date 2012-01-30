@@ -30,8 +30,8 @@ def htmlhelp():
     <em>run_script</em> function that accepts a single argument. This is the standard
     entry point used by Script Runner. A reference to
     the qgis.utils.iface object will be passed to your <em>run_script</em> function.
-    You don't have to use the iface object in your script if you choose to import
-    qgis.core and qgis.gui.
+    You don't have to use the iface object in your script but your
+    <em>run_script</em> function must accept it as an argument.  
     </p>
    <p>
    Here is an example of a simple <em>run_script</em> function:

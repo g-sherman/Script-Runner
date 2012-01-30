@@ -36,33 +36,25 @@ class ScriptRunner:
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
-        # create the mainwindow
-        self.mw = ScriptRunnerMainWindow()
+
 
     def initGui(self):
+        # create the mainwindow
+        self.mw = ScriptRunnerMainWindow()
+        # fetch the list of stored scripts from user setting
+        settings = QSettings()
+        stored_scripts = settings.value("ScriptRunner/scripts")
+        self.list_of_scripts = stored_scripts.toList()
+
         # Create action that will start plugin configuration
         self.action = QAction(QIcon(":/plugins/scriptrunner/icon.png"), \
             "ScriptRunner", self.iface.mainWindow())
         # connect the action to the run method
         QObject.connect(self.action, SIGNAL("triggered()"), self.run)
 
-        # connect the run button to the run_script method
-#        QObject.connect(self.dlg.ui.pushBtnRun, SIGNAL("clicked()"), self.run_script)
-#
-#        # connect the add button to the add method
-#        QObject.connect(self.dlg.ui.pushAdd, SIGNAL("clicked()"), self.add_script)
-#        # connect the remove button to the remove method
-#        QObject.connect(self.dlg.ui.pushRemove, SIGNAL("clicked()"), self.remove_script)
-#
 #        # Add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu("&ScriptRunner", self.action)
-#
-#        #grid_layout = QGridLayout(self.dlg.ui.frame)
-#        # create the main toolbar
-#        self.toolbar = QToolBar('Toolbar', self.dlg) #.ui.frame)
-#
-#        self.action_group = QActionGroup(self.dlg)
 
         self.main_window = self.mw.ui
 
@@ -73,21 +65,18 @@ class ScriptRunner:
         # action for adding a script
         self.add_action = QAction(QIcon(":plugins/scriptrunner/add_icon"),
                 "Add Script", self.mw)
-        #self.add_action.setIconText('Add script')
         self.toolbar.addAction(self.add_action)
         QObject.connect(self.add_action, SIGNAL("triggered()"), self.add_script)
 
         # action for running a script
         self.run_action = QAction(QIcon(":plugins/scriptrunner/run_icon"),
                 "Run Script", self.mw)
-        #self.run_action.setIconText('Run script')
         self.toolbar.addAction(self.run_action)
         QObject.connect(self.run_action, SIGNAL("triggered()"), self.run_script)
 
         # action for getting info about a script
         self.info_action = QAction(QIcon(":plugins/scriptrunner/info_icon"),
                 "Script Info", self.mw)
-        #self.info_action.setIconText('Script Info')
         self.toolbar.addAction(self.info_action)
         QObject.connect(self.info_action, SIGNAL("triggered()"), self.info)
 
@@ -103,23 +92,15 @@ class ScriptRunner:
                 "Remove Script", self.mw)
         self.toolbar.addAction(self.remove_action)
         QObject.connect(self.remove_action, SIGNAL("triggered()"), self.remove_script)
-#
-#
-#        self.toolbar.addWidget(self.action_group)
-#        #self.toolbar.addAction(self.add_action)
-#        #self.toolbar.addAction(self.info_action)
-#        #grid_layout.addWidget(self.toolbar)
-#
 
-        # setup the splitter and list/text browser
+        # setup the splitter and list/text browser and mainwindow layout
         self.layout = QHBoxLayout(self.main_window.frame)
-
         self.splitter = QSplitter(self.main_window.frame)
-
-
         self.layout.addWidget(self.splitter)
+
         self.scriptList = QListWidget()
         self.splitter.addWidget(self.scriptList)
+
         self.tabWidget = QTabWidget()
         self.textBrowser = QTextBrowser()
         self.textBrowserSource = QTextBrowser()
@@ -133,28 +114,32 @@ class ScriptRunner:
         split_size = [150, 350]
         self.splitter.setSizes(split_size)
         
-#
-#        # add test data
-#
-#        item = QListWidgetItem('loader.py', self.scriptList)
-#        item.setToolTip('/Users/gsherman/qgis_scripts/loader.py')
-#
+        # add the list of scripts fetched from settings
+        for script in self.list_of_scripts:
+            (script_dir, script_name) = os.path.split(str(script.toString()))
+            item = QListWidgetItem(script_name, self.scriptList)
+            item.setToolTip(script.toString())
+
     def unload(self):
         # Remove the plugin menu item and icon
         self.iface.removePluginMenu("&ScriptRunner",self.action)
         self.iface.removeToolBarIcon(self.action)
 
     def add_script(self):
-        script = QFileDialog.getOpenFileName(None, "Add a Python Script", "", "Python scripts (*.py)")
+        script = QFileDialog.getOpenFileName(None, "Add a Python Script", 
+                "", "Python scripts (*.py)")
         # check to see if we have a run method without importing the script
         if self.have_run_method(script):
             (script_dir, script_name) = os.path.split(str(script))
             item = QListWidgetItem(script_name, self.scriptList)
             item.setToolTip(script)
             self.main_window.statusbar.showMessage("Added script: %s" % script)
+            self.list_of_scripts.append(script)
+            self.update_settings()
+            
         else:
             QMessageBox.information(None, "Error", "Your script must have a run_script() function defined. Adding the script failed.")
-            self.main_window.statusbar.showMessage("Failed to add script: %s - no run_script function" % script_name)
+            self.main_window.statusbar.showMessage("Failed to add: %s - no run_script function" % script)
 
 
 
@@ -165,10 +150,12 @@ class ScriptRunner:
                     "Are you sure you want to remove %s?" % item.text(),
                     QMessageBox.Yes, QMessageBox.No)
             if result == QMessageBox.Yes:
+                self.list_of_scripts.pop(self.list_of_scripts.index(item.toolTip()))
+                self.update_settings()
                 self.scriptList.takeItem(self.scriptList.currentRow())
 
     def reload_script(self):
-        QMessageBox.information(None, "Reload", "Reload script was clicked")
+        QMessageBox.information(None, "Reload", "Reload script was clicked--not implemented yet")
 
     def info(self):
         item = self.scriptList.currentItem()
@@ -184,7 +171,7 @@ class ScriptRunner:
             # add the doc string to the info page
             doc_string = inspect.getdoc(sys.modules[user_module])
             doc_string = doc_string.replace('\n', '<br>')
-            html = "<h4>Doc String:</h4>%s" % doc_string
+            html = "<h3>%s</h3><h4>Doc String:</h4>%s" % (script, doc_string)
 
             # populate the source tab
             source_code = "<pre>%s</pre>" % inspect.getsource(sys.modules[user_module])
@@ -213,6 +200,7 @@ class ScriptRunner:
             html += "</ul>"
 
             self.textBrowser.setHtml(html)
+            self.tabWidget.setCurrentIndex(0)
 
 
 
@@ -237,7 +225,6 @@ class ScriptRunner:
 
     # Bring up the main window
     def run(self):
-        # show the main window
         self.mw.show()
 
     def have_run_method(self, script_path):
@@ -250,3 +237,10 @@ class ScriptRunner:
                 break
         script.close()
         return run_method
+
+    def update_settings(self):
+        settings = QSettings()
+        settings.setValue("ScriptRunner/scripts", QVariant(self.list_of_scripts))
+
+      
+
