@@ -128,18 +128,19 @@ class ScriptRunner:
     def add_script(self):
         script = QFileDialog.getOpenFileName(None, "Add a Python Script", 
                 "", "Python scripts (*.py)")
-        # check to see if we have a run method without importing the script
-        if self.have_run_method(script):
-            (script_dir, script_name) = os.path.split(str(script))
-            item = QListWidgetItem(script_name, self.scriptList)
-            item.setToolTip(script)
-            self.main_window.statusbar.showMessage("Added script: %s" % script)
-            self.list_of_scripts.append(script)
-            self.update_settings()
-            
-        else:
-            QMessageBox.information(None, "Error", "Your script must have a run_script() function defined. Adding the script failed.")
-            self.main_window.statusbar.showMessage("Failed to add: %s - no run_script function" % script)
+        if script:
+            # check to see if we have a run method without importing the script
+            if self.have_run_method(script):
+                (script_dir, script_name) = os.path.split(str(script))
+                item = QListWidgetItem(script_name, self.scriptList)
+                item.setToolTip(script)
+                self.main_window.statusbar.showMessage("Added script: %s" % script)
+                self.list_of_scripts.append(script)
+                self.update_settings()
+                
+            else:
+                QMessageBox.information(None, "Error", "Your script must have a run_script() function defined. Adding the script failed.")
+                self.main_window.statusbar.showMessage("Failed to add: %s - no run_script function" % script)
 
 
 
