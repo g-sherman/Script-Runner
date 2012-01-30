@@ -74,3 +74,12 @@ def htmlhelp():
     </body>
     </html>"""
 
+def htmlabout():
+    return """<html>
+    <body>
+    <h2>About Script Runner</h2>
+    Author: Gary Sherman, Copyright &copy; 2012 GeoApt LLC<br/>
+    Repository: <a href="http://github.com/g-sherman">http://github.com/g-sherman</a>
+    
+    </body>
+    </html>"""

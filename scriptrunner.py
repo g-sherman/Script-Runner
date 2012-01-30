@@ -23,13 +23,14 @@ import inspect
 # Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 from qgis.core import *
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
 from scriptrunner_mainwindow import ScriptRunnerMainWindow
 # Import the help module
-from scriptrunner_help import htmlhelp
+from scriptrunner_help import *
 
 class ScriptRunner:
 
@@ -102,13 +103,22 @@ class ScriptRunner:
         self.splitter.addWidget(self.scriptList)
 
         self.tabWidget = QTabWidget()
+
         self.textBrowser = QTextBrowser()
+        self.tabWidget.addTab(self.textBrowser, "Info")
+
         self.textBrowserSource = QTextBrowser()
+        self.tabWidget.addTab(self.textBrowserSource, "Source")
+        
         self.textBrowserHelp = QTextBrowser()
         self.textBrowserHelp.setHtml(htmlhelp())
-        self.tabWidget.addTab(self.textBrowser, "Info")
-        self.tabWidget.addTab(self.textBrowserSource, "Source")
         self.tabWidget.addTab(self.textBrowserHelp, "Help")
+
+        self.textBrowserAbout = QTextBrowser()
+        self.textBrowserAbout.setHtml(htmlabout())
+        self.textBrowserAbout.setOpenExternalLinks(True)
+        self.tabWidget.addTab(self.textBrowserAbout, "About")
+
         self.splitter.addWidget(self.tabWidget)
         # set the sizes for the splitter
         split_size = [150, 350]
