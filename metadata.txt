@@ -24,12 +24,12 @@ version=0.2
 # tags are comma separated with spaces allowed
 tags=python,scripts
 
-homepage=http://scriptrunner.geoapt.com
-tracker=http://bugs.geoapt.com
-repository=http://gihub.com
+homepage=http://spatialgalaxy.net/?p=807
+tracker=
+repository=
 icon=icon.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version
 deprecated=False
