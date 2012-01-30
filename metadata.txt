@@ -25,8 +25,8 @@ version=0.2
 tags=python,scripts
 
 homepage=http://spatialgalaxy.net/?p=807
-tracker=
-repository=
+#tracker=
+#repository=
 icon=icon.png
 # experimental flag
 experimental=False
