@@ -114,11 +114,15 @@ class ScriptRunner:
         split_size = [150, 350]
         self.splitter.setSizes(split_size)
         
-        # add the list of scripts fetched from settings
-        for script in self.list_of_scripts:
-            (script_dir, script_name) = os.path.split(str(script.toString()))
-            item = QListWidgetItem(script_name, self.scriptList)
-            item.setToolTip(script.toString())
+        if len(self.list_of_scripts) == 0:
+            # make the help tab visible if no scripts are loaded
+            self.tabWidget.setCurrentIndex(2)
+        else:
+            # add the list of scripts fetched from settings
+            for script in self.list_of_scripts:
+                (script_dir, script_name) = os.path.split(str(script.toString()))
+                item = QListWidgetItem(script_name, self.scriptList)
+                item.setToolTip(script.toString())
 
     def unload(self):
         # Remove the plugin menu item and icon
@@ -156,7 +160,17 @@ class ScriptRunner:
                 self.scriptList.takeItem(self.scriptList.currentRow())
 
     def reload_script(self):
-        QMessageBox.information(None, "Reload", "Reload script was clicked--not implemented yet")
+        item = self.scriptList.currentItem()
+        if item != None:
+            script = item.toolTip()
+            (script_dir, script_name) = os.path.split(str(script))
+            (user_module, ext) = os.path.splitext(script_name)
+            if sys.modules.has_key(user_module):
+                reload(sys.modules[user_module])
+                self.main_window.statusbar.showMessage("Reloaded script: %s" % script)
+            else:
+                QMessageBox.information(None, "Reload", 
+                        "The %s script was not reloaded since it hasn't been imported yet" % user_module)
 
     def info(self):
         item = self.scriptList.currentItem()
@@ -171,7 +185,10 @@ class ScriptRunner:
 
             # add the doc string to the info page
             doc_string = inspect.getdoc(sys.modules[user_module])
-            doc_string = doc_string.replace('\n', '<br>')
+            if doc_string == None:
+                doc_string = "You Have not Docstring. You really should add one..."
+            else:
+                doc_string = doc_string.replace('\n', '<br>')
             html = "<h3>%s</h3><h4>Doc String:</h4>%s" % (script, doc_string)
 
             # populate the source tab

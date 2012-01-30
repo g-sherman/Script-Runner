@@ -20,11 +20,11 @@
  This script initializes the plugin, making it known to QGIS.
 """
 def name():
-    return "ScriptRunner: Run Python scripts in QGIS"
+    return "ScriptRunner"
 def description():
     return "Run scripts to automate QGIS tasks"
 def version():
-    return "Version 0.1"
+    return "Version 0.2"
 def icon():
     return "icon.png"
 def qgisMinimumVersion():

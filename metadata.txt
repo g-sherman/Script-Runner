@@ -12,7 +12,7 @@
 name=ScriptRunner
 qgisMinimumVersion=1.7
 description=Run scripts to automate QGIS tasks
-version=0.1
+version=0.2
 
 # end of mandatory metadata
 
