@@ -12,21 +12,21 @@
 name=ScriptRunner
 qgisMinimumVersion=1.7
 description=Run scripts to automate QGIS tasks
-version=0.2
+version=0.3
 
 # end of mandatory metadata
 
 # Optional items:
 
 # Uncomment the following line and add your changelog entries:
-# changelog=
+changelog=0.3: Added About tab with links to relevant pages
 
 # tags are comma separated with spaces allowed
 tags=python,scripts
 
 homepage=http://spatialgalaxy.net/?p=807
-#tracker=
-#repository=
+tracker=http://hub.qgis.org/projects/scriptrunner
+repository=https://github.com/g-sherman/Script-Runner
 icon=icon.png
 # experimental flag
 experimental=False

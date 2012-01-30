@@ -24,7 +24,7 @@ def name():
 def description():
     return "Run scripts to automate QGIS tasks"
 def version():
-    return "Version 0.2"
+    return "Version 0.3"
 def icon():
     return "icon.png"
 def qgisMinimumVersion():

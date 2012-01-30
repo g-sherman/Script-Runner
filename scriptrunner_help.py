@@ -78,8 +78,25 @@ def htmlabout():
     return """<html>
     <body>
     <h2>About Script Runner</h2>
-    Author: Gary Sherman, Copyright &copy; 2012 GeoApt LLC<br/>
-    Repository: <a href="http://github.com/g-sherman">http://github.com/g-sherman</a>
+    <p>
+    Script Runner lets you run Python scripts in QGIS to automate and perform
+    repetitive tasks.
+    </p>
+    <p>
+    Author: Gary Sherman, Copyright &copy; 2012 GeoApt LLC</p>
+    <p>
+    Email: 
+    <a href="mailto:gsherman@geoapt.com?Subject=Script Runner">gsherman@geoapt.com</>
+    </p>
+    <p>
+    Repository: <a href="https://github.com/g-sherman/Script-Runner">https://github.com/g-sherman/Script-Runner</a>
+    </p>
+    <p>
+    Bug Tracker: <a href="http://hub.qgis.org/projects/scriptrunner">http://hub.qgis.org/projects/scriptrunner</a>
+    </p>
     
+    <p>
+    Please report issues and feature requests using the Bug Tracker.
+    </p>
     </body>
     </html>"""
