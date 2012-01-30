@@ -9,7 +9,7 @@
 
 
 [general]
-name=ScriptRunner: Run Python scripts in QGIS
+name=ScriptRunner
 qgisMinimumVersion=1.7
 description=Run scripts to automate QGIS tasks
 version=0.1
