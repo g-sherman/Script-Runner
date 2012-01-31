@@ -1,17 +1,15 @@
 """
- ScriptRunner
- A QGIS plugin
- Run scripts to automate QGIS tasks
-                              -------------------
-        begin                : 2012-01-27
-        copyright            : (C) 2012 by GeoApt LLC
-        email                : gsherman@geoapt.com
+ScriptRunner - A QGIS plugin that runs scripts to automate QGIS tasks.
+
+Date: 2012-01-27
+Copyright: (C) 2012 by GeoApt LLC
+Email: gsherman@geoapt.com
 
 
-    This program is free software; you can redistribute it and/or modify  
-    it under the terms of the GNU General Public License as published by  
-    the Free Software Foundation; either version 2 of the License, or     
-    (at your option) any later version.                                   
+This program is free software; you can redistribute it and/or modify  
+it under the terms of the GNU General Public License as published by  
+the Free Software Foundation; either version 2 of the License, or     
+(at your option) any later version.                                   
                                                                           
 """
 
@@ -34,12 +32,23 @@ from scriptrunner_help import *
 
 class ScriptRunner:
 
+    """
+    ScriptRunner is the main plugin class that initializes the QGIS
+    plugin, initializes the GUI, and performs the work.
+    """
+
     def __init__(self, iface):
-        # Save reference to the QGIS interface
+        """
+        Save reference to the QGIS interface
+        """
         self.iface = iface
 
 
     def initGui(self):
+        """
+        Initialize the GUI elements and menu/tool 
+        on the QGIS Plugins toolbar.
+        """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
         # fetch the list of stored scripts from user setting
@@ -135,11 +144,16 @@ class ScriptRunner:
                 item.setToolTip(script.toString())
 
     def unload(self):
-        # Remove the plugin menu item and icon
+        """
+        Cleanup the QGIS GUI by removing the plugin menu item and icon.
+        """
         self.iface.removePluginMenu("&ScriptRunner",self.action)
         self.iface.removeToolBarIcon(self.action)
 
     def add_script(self):
+        """
+        Add a script to the list of scripts that can be executed.
+        """
         script = QFileDialog.getOpenFileName(None, "Add a Python Script", 
                 "", "Python scripts (*.py)")
         if script:
@@ -159,6 +173,9 @@ class ScriptRunner:
 
 
     def remove_script(self):
+        """
+        Remove a script from the list of scripts that can be executed.
+        """
         item = self.scriptList.currentItem()
         if item != None:
             result = QMessageBox.question(None, "Remove Script", 
@@ -170,6 +187,9 @@ class ScriptRunner:
                 self.scriptList.takeItem(self.scriptList.currentRow())
 
     def reload_script(self):
+        """
+        Reload the currently selected script.
+        """
         item = self.scriptList.currentItem()
         if item != None:
             script = item.toolTip()
@@ -183,6 +203,10 @@ class ScriptRunner:
                         "The %s script was not reloaded since it hasn't been imported yet" % user_module)
 
     def info(self):
+        """
+        Display information about the script, including the docstring,
+        classes, methods, and functions.
+        """
         item = self.scriptList.currentItem()
         if item != None:
             script = item.toolTip()
@@ -233,6 +257,9 @@ class ScriptRunner:
 
 
     def run_script(self):
+        """
+        Run the currently selected script.
+        """
         # get the selected item from the list
         item = self.scriptList.currentItem()
         if item != None:
@@ -251,11 +278,17 @@ class ScriptRunner:
             user_script.run_script(self.iface)
             self.main_window.statusbar.showMessage("Completed script: %s" % script)
 
-    # Bring up the main window
     def run(self):
+        """
+        Bring up the main window.
+        """
         self.mw.show()
 
     def have_run_method(self, script_path):
+        """
+        Parse the script to make sure it has a run_script function
+        before allowing it to be added to the list of scripts.
+        """
         script = open(script_path, 'r')
         pattern = re.compile('\s*def run_script\(*')
         run_method = False
@@ -267,6 +300,10 @@ class ScriptRunner:
         return run_method
 
     def update_settings(self):
+        """
+        Update the setting for the plugin---at present just
+        the list of scripts.
+        """
         settings = QSettings()
         settings.setValue("ScriptRunner/scripts", QVariant(self.list_of_scripts))
 

@@ -1,5 +1,16 @@
+"""
+
+Help strings used in the plugin:
+    htmlhelp: HTML for the Help tab 
+    htmlabout: HTML for th About tab
+
+"""
+
 def htmlhelp():
-  return """<html>
+    """
+    Return the html used to populate the Help tab.
+    """
+    return """<html>
     <body>
     <h2>Script Runner Help</h2>
     <br>
@@ -75,6 +86,9 @@ def htmlhelp():
     </html>"""
 
 def htmlabout():
+    """
+    Return the html used to populate the About tab.
+    """
     return """<html>
     <body>
     <h2>About Script Runner</h2>
