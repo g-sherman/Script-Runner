@@ -29,6 +29,8 @@ import resources
 from scriptrunner_mainwindow import ScriptRunnerMainWindow
 # Import the help module
 from scriptrunner_help import *
+#from highlighter import *
+from syntax import *
 
 class ScriptRunner:
 
@@ -118,6 +120,7 @@ class ScriptRunner:
 
         self.textBrowserSource = QTextBrowser()
         self.tabWidget.addTab(self.textBrowserSource, "Source")
+        highlighter = PythonHighlighter(self.textBrowserSource.document())
         
         self.textBrowserHelp = QTextBrowser()
         self.textBrowserHelp.setHtml(htmlhelp())

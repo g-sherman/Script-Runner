@@ -52,9 +52,10 @@ deploy: compile
 # Create a zip package of the plugin named $(PLUGINNAME).zip. 
 # This requires use of git (your plugin development directory must be a 
 # git repository).
-# To use, pass a valid commit or tag as follows:
-#   make package VERSION=Version_0.3.2
+# 
+# Get the last commit hash
+COMMITHASH=$(shell git rev-parse HEAD)
 package: compile
 		rm -f $(PLUGINNAME).zip
-		git archive --prefix=$(PLUGINNAME)/ -o $(PLUGINNAME).zip $(VERSION)
+		git archive --prefix=$(PLUGINNAME)/ -o $(PLUGINNAME).zip $(COMMITHASH)
 		echo "Created package: $(PLUGINNAME).zip"
