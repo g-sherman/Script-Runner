@@ -201,6 +201,7 @@ class ScriptRunner:
             if sys.modules.has_key(user_module):
                 reload(sys.modules[user_module])
                 self.main_window.statusbar.showMessage("Reloaded script: %s" % script)
+                self.info()
             else:
                 QMessageBox.information(None, "Reload", 
                         "The %s script was not reloaded since it hasn't been imported yet" % user_module)
@@ -229,7 +230,7 @@ class ScriptRunner:
             html = "<h3>%s</h3><h4>Doc String:</h4>%s" % (script, doc_string)
 
             # populate the source tab
-            source_code = "<pre>%s</pre>" % inspect.getsource(sys.modules[user_module])
+            source_code = "<pre>%s</pre>" % self.get_source(script) #inspect.getsource(sys.modules[user_module])
             self.textBrowserSource.setHtml(source_code)
 
             classes = inspect.getmembers(sys.modules[user_module], inspect.isclass)
@@ -258,6 +259,13 @@ class ScriptRunner:
             self.tabWidget.setCurrentIndex(0)
 
 
+
+    def get_source(self, script):
+        src = open(script, 'r')
+        source = src.read()#.replace("\n", '<br>')
+        source 
+        src.close()
+        return source
 
     def run_script(self):
         """

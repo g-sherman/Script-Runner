@@ -112,5 +112,11 @@ def htmlabout():
     <p>
     Please report issues and feature requests using the Bug Tracker.
     </p>
+    <p>
+    Syntax highlighting taken from:
+    <a href="http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting">http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting</a> "Based on
+    existing work by Carson Farmer and Christophe Kibleur,
+       and an example on the SciPres wiki."
+       </p>
     </body>
     </html>"""
