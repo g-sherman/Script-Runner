@@ -12,14 +12,14 @@
 name=ScriptRunner
 qgisMinimumVersion=1.7
 description=Run scripts to automate QGIS tasks
-version=0.4
+version=0.5
 
 # end of mandatory metadata
 
 # Optional items:
 
 # Uncomment the following line and add your changelog entries:
-changelog=0.4: Added docstrings to code. Syntax highlighting of source
+changelog=0.5: Double-click on script to show info/source; Fix problem with info under master (issue 5034)
 
 # tags are comma separated with spaces allowed
 tags=python,scripts

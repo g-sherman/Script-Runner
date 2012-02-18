@@ -29,7 +29,7 @@ def version():
     """
     Return the version of the plugin.
     """
-    return "Version 0.4"
+    return "Version 0.5"
 def icon():
     """
     Return the name of the icon used in the toolbar.

@@ -2,7 +2,7 @@
 
 Help strings used in the plugin:
     htmlhelp: HTML for the Help tab 
-    htmlabout: HTML for th About tab
+    htmlabout: HTML for the About tab
 
 """
 
@@ -91,7 +91,7 @@ def htmlabout():
     """
     return """<html>
     <body>
-    <h3>Script Runner - Version 0.4</h3>
+    <h3>Script Runner - Version 0.5</h3>
     <p>
     Script Runner lets you run Python scripts in QGIS to automate and perform
     repetitive tasks.
@@ -118,5 +118,10 @@ def htmlabout():
     existing work by Carson Farmer and Christophe Kibleur,
        and an example on the SciPres wiki."
        </p>
+       <h4>Changelog</h4>
+       <ul>
+       <li>Double-click on script to show info/source</li>
+       <li>Fix problem with info under master (issue #5034)</li>
+       </ul>
     </body>
     </html>"""

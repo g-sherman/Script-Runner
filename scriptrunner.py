@@ -111,6 +111,9 @@ class ScriptRunner:
         self.layout.addWidget(self.splitter)
 
         self.scriptList = QListWidget()
+        # connect double click to info slot
+        QObject.connect(self.scriptList, SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.item_info)
+
         self.splitter.addWidget(self.scriptList)
 
         self.tabWidget = QTabWidget()
@@ -206,13 +209,18 @@ class ScriptRunner:
                 QMessageBox.information(None, "Reload", 
                         "The %s script was not reloaded since it hasn't been imported yet" % user_module)
 
-    def info(self):
+                
+    def item_info(self, item):
+        self.info(item)
+
+    def info(self, item=None):
         """
         Display information about the script, including the docstring,
         classes, methods, and functions.
         """
-        item = self.scriptList.currentItem()
-        if item != None:
+        if item == None:
+            item = self.scriptList.currentItem()
+        if item != None: # just in case there is no currentitem and none was passed
             script = item.toolTip()
             (script_dir, script_name) = os.path.split(str(script))
             (user_module, ext) = os.path.splitext(script_name)
@@ -224,7 +232,7 @@ class ScriptRunner:
             # add the doc string to the info page
             doc_string = inspect.getdoc(sys.modules[user_module])
             if doc_string == None:
-                doc_string = "You Have not Docstring. You really should add one..."
+                doc_string = "You Have no Docstring. You really should add one..."
             else:
                 doc_string = doc_string.replace('\n', '<br>')
             html = "<h3>%s</h3><h4>Doc String:</h4>%s" % (script, doc_string)
@@ -241,12 +249,13 @@ class ScriptRunner:
 
             for cls in classes:
               modinfo = inspect.getmodule(cls[1])
-              if modinfo.__name__ == user_module:
-                  html += "<li>%s</li>" % cls[0]
-                  html += "<ul>"
-                  for meth in inspect.getmembers(cls[1], inspect.ismethod):
-                    html+= "<li>%s</li>" % meth[0]
-                  html += "</ul></ul>"
+              if modinfo:
+                  if modinfo.__name__ == user_module:
+                      html += "<li>%s</li>" % cls[0]
+                      html += "<ul>"
+                      for meth in inspect.getmembers(cls[1], inspect.ismethod):
+                        html+= "<li>%s</li>" % meth[0]
+                      html += "</ul></ul>"
             functions = inspect.getmembers(sys.modules[user_module], inspect.isfunction)
             html += "<h4>Functions in %s</h4><ul>" % script_name
             for func in functions:
