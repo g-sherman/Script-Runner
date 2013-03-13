@@ -34,7 +34,7 @@ from scriptrunner_help import *
 from syntax import *
 
 # for remote pydev debug (remove prior to production)
-import debug_settings
+#import debug_settings
 
 
 class ScriptRunner:
@@ -50,10 +50,9 @@ class ScriptRunner:
         """
         self.iface = iface
         if (console._console is None):
-            #if (self.show_console_at_startup):
-            console.show_console()
-            #else:
-            #    console._console = console.PythonConsole(iface.mainWindow())
+            console._console = console.PythonConsole(iface.mainWindow())
+        console.show_console()
+        
 
         self.console = console._console
 
@@ -293,7 +292,7 @@ class ScriptRunner:
         """
         # get the selected item from the list
         item = self.scriptList.currentItem()
-        settrace()
+        #settrace()
         if item != None:
             script = item.toolTip()
             self.main_window.statusbar.showMessage("Running script: %s" % script)
@@ -308,11 +307,17 @@ class ScriptRunner:
             user_script = __import__(user_module)
  
             user_script.run_script(self.iface)
+            self.console.edit.insertTaggedText("\nRunning script: %s" % script_name, 1)
             output = sys.stdout.get_and_clean_data()
-                if output:
-                    self.console.edit.insertTaggedText(output, 2)
+            if output:
+                #QMessageBox.information(None, "Script Output", output)
+                self.console.setVisible(True)
+                self.console.edit.insertTaggedText("SCRIPTRUNNER:\n%s" % output, 3)
+                self.console.edit.insertTaggedText("Completed script: %s" % script_name, 1)
+                self.console.edit.displayPrompt()
 
             self.main_window.statusbar.showMessage("Completed script: %s" % script)
+            self.console.edit.ensureCursorVisible()
 
     def run(self):
         """
