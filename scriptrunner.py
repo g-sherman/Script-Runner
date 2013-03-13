@@ -6,11 +6,11 @@ Copyright: (C) 2012 by GeoApt LLC
 Email: gsherman@geoapt.com
 
 
-This program is free software; you can redistribute it and/or modify  
-it under the terms of the GNU General Public License as published by  
-the Free Software Foundation; either version 2 of the License, or     
-(at your option) any later version.                                   
-                                                                          
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
 """
 
 import sys
@@ -23,6 +23,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from qgis.core import *
+from qgis import console
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -31,6 +32,10 @@ from scriptrunner_mainwindow import ScriptRunnerMainWindow
 from scriptrunner_help import *
 #from highlighter import *
 from syntax import *
+
+# for remote pydev debug (remove prior to production)
+import debug_settings
+
 
 class ScriptRunner:
 
@@ -44,11 +49,17 @@ class ScriptRunner:
         Save reference to the QGIS interface
         """
         self.iface = iface
+        if (console._console is None):
+            #if (self.show_console_at_startup):
+            console.show_console()
+            #else:
+            #    console._console = console.PythonConsole(iface.mainWindow())
 
+        self.console = console._console
 
     def initGui(self):
         """
-        Initialize the GUI elements and menu/tool 
+        Initialize the GUI elements and menu/tool
         on the QGIS Plugins toolbar.
         """
         # create the mainwindow
@@ -73,18 +84,20 @@ class ScriptRunner:
         self.toolbar = self.main_window.toolBar
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-        ## Action setup 
+        ## Action setup
         # action for adding a script
         self.add_action = QAction(QIcon(":plugins/scriptrunner/add_icon"),
                 "Add Script", self.mw)
         self.toolbar.addAction(self.add_action)
-        QObject.connect(self.add_action, SIGNAL("triggered()"), self.add_script)
+        QObject.connect(self.add_action,
+                SIGNAL("triggered()"), self.add_script)
 
         # action for running a script
         self.run_action = QAction(QIcon(":plugins/scriptrunner/run_icon"),
                 "Run Script", self.mw)
         self.toolbar.addAction(self.run_action)
-        QObject.connect(self.run_action, SIGNAL("triggered()"), self.run_script)
+        QObject.connect(self.run_action,
+                SIGNAL("triggered()"), self.run_script)
 
         # action for getting info about a script
         self.info_action = QAction(QIcon(":plugins/scriptrunner/info_icon"),
@@ -153,7 +166,7 @@ class ScriptRunner:
         """
         Cleanup the QGIS GUI by removing the plugin menu item and icon.
         """
-        self.iface.removePluginMenu("&ScriptRunner",self.action)
+        self.iface.removePluginMenu("&ScriptRunner", self.action)
         self.iface.removeToolBarIcon(self.action)
 
     def add_script(self):
@@ -175,8 +188,6 @@ class ScriptRunner:
             else:
                 QMessageBox.information(None, "Error", "Your script must have a run_script() function defined. Adding the script failed.")
                 self.main_window.statusbar.showMessage("Failed to add: %s - no run_script function" % script)
-
-
 
     def remove_script(self):
         """
@@ -271,7 +282,7 @@ class ScriptRunner:
 
     def get_source(self, script):
         src = open(script, 'r')
-        source = src.read()#.replace("\n", '<br>')
+        source = src.read()  #.replace("\n", '<br>')
         source 
         src.close()
         return source
@@ -282,6 +293,7 @@ class ScriptRunner:
         """
         # get the selected item from the list
         item = self.scriptList.currentItem()
+        settrace()
         if item != None:
             script = item.toolTip()
             self.main_window.statusbar.showMessage("Running script: %s" % script)
@@ -296,6 +308,10 @@ class ScriptRunner:
             user_script = __import__(user_module)
  
             user_script.run_script(self.iface)
+            output = sys.stdout.get_and_clean_data()
+                if output:
+                    self.console.edit.insertTaggedText(output, 2)
+
             self.main_window.statusbar.showMessage("Completed script: %s" % script)
 
     def run(self):
