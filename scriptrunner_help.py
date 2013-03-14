@@ -66,6 +66,7 @@ def htmlhelp():
    you have defined a <em>run_script</em> function. If not, Script Runner won't load
    your script.
    </p>
+   <a name="working_with_scripts"/>
    <h4>Working with Scripts</h4>
    <p>
    To run a script, you must add it to Script Runner using the <em>Add Script</em> tool on the toolbar. This will add it to a list in the left panel. This list of scripts is persisted between uses of QGIS. You can remove a script using the <em>Remove Script</em> tool. This just removes it from the list; it does nothing to the script file on disk.
@@ -91,13 +92,13 @@ def htmlabout():
     """
     return """<html>
     <body>
-    <h3>Script Runner - Version 0.5</h3>
+    <h3>Script Runner - Version 0.6</h3>
     <p>
     Script Runner lets you run Python scripts in QGIS to automate and perform
     repetitive tasks.
     </p>
     <p>
-    Author: Gary Sherman, Copyright &copy; 2012 GeoApt LLC</p>
+    Author: Gary Sherman, Copyright &copy; 2012-2013 GeoApt LLC</p>
     <p>
     Email: 
     <a href="mailto:gsherman@geoapt.com?Subject=Script Runner">gsherman@geoapt.com</>
@@ -112,13 +113,24 @@ def htmlabout():
     <p>
     Please report issues and feature requests using the Bug Tracker.
     </p>
-    <p>
-    Syntax highlighting taken from:
-    <a href="http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting">http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting</a> "Based on
-    existing work by Carson Farmer and Christophe Kibleur,
-       and an example on the SciPres wiki."
-       </p>
+    <h4>Credits</h4>
+    <ul>
+    <li>Syntax highlighting taken from:
+    <a href="http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting">http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting</a> "Based on existing work by Carson Farmer and Christophe Kibleur,
+       and an example on the SciPres wiki."</li>
+   <li>Console output adapted from code by Liam Veitch</li>
+   </ul>
        <h4>Changelog</h4>
+       <ul>
+       <li>0.6</li>
+       <ul>
+       <li>Script output can now be directed to the Python console<li>
+       <li>Script output can be logged to disk</li>
+       <li>Preferences dialog allows control of output and logging options</li>
+       <li>Exceptions in scripts are displayed without interfering with console/logging output</li>
+
+       </ul>
+       <li>0.5</li>
        <ul>
        <li>Double-click on script to show info/source</li>
        <li>Fix problem with info under master (issue #5034)</li>

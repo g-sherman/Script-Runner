@@ -14,9 +14,11 @@ the Free Software Foundation; either version 2 of the License, or
 """
 
 import sys
+import traceback
 import os
 import re
 import inspect
+import datetime
 
 # Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
@@ -28,6 +30,10 @@ from qgis import console
 import resources
 # Import the code for the dialog
 from scriptrunner_mainwindow import ScriptRunnerMainWindow
+# Import the preferenes dialog
+from preferences_dialog import PreferencesDialog
+# Import the traceback dialog
+from traceback_dialog import TracebackDialog
 # Import the help module
 from scriptrunner_help import *
 #from highlighter import *
@@ -49,12 +55,10 @@ class ScriptRunner:
         Save reference to the QGIS interface
         """
         self.iface = iface
-        if (console._console is None):
-            console._console = console.PythonConsole(iface.mainWindow())
-        console.show_console()
-        
 
-        self.console = console._console
+        self.settings = QSettings()
+        self.fetch_settings()
+        self.configure_console()
 
     def initGui(self):
         """
@@ -64,8 +68,7 @@ class ScriptRunner:
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
         # fetch the list of stored scripts from user setting
-        settings = QSettings()
-        stored_scripts = settings.value("ScriptRunner/scripts")
+        stored_scripts = self.settings.value("ScriptRunner/scripts")
         self.list_of_scripts = stored_scripts.toList()
 
         # Create action that will start plugin configuration
@@ -117,6 +120,13 @@ class ScriptRunner:
         self.toolbar.addAction(self.remove_action)
         QObject.connect(self.remove_action, SIGNAL("triggered()"), self.remove_script)
 
+        # action for setting prevferences
+        self.prefs_action = QAction(QIcon(":plugins/scriptrunner/prefs_icon"),
+                "Preferences", self.mw)
+        self.toolbar.addAction(self.prefs_action)
+        self.prefs_action.triggered.connect(self.set_preferences)
+        #QObject.connect(self.prefs_action, SIGNAL("triggered()"), self.prefs_script)
+
         # setup the splitter and list/text browser and mainwindow layout
         self.layout = QHBoxLayout(self.main_window.frame)
         self.splitter = QSplitter(self.main_window.frame)
@@ -125,6 +135,7 @@ class ScriptRunner:
         self.scriptList = QListWidget()
         # connect double click to info slot
         QObject.connect(self.scriptList, SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.item_info)
+        self.scriptList.currentItemChanged.connect(self.current_script_changed)
 
         self.splitter.addWidget(self.scriptList)
 
@@ -160,6 +171,7 @@ class ScriptRunner:
                 (script_dir, script_name) = os.path.split(str(script.toString()))
                 item = QListWidgetItem(script_name, self.scriptList)
                 item.setToolTip(script.toString())
+        self.scriptList.setCurrentRow(0)
 
     def unload(self):
         """
@@ -275,7 +287,7 @@ class ScriptRunner:
             html += "</ul>"
 
             self.textBrowser.setHtml(html)
-            self.tabWidget.setCurrentIndex(0)
+            #self.tabWidget.setCurrentIndex(0)
 
 
 
@@ -306,18 +318,47 @@ class ScriptRunner:
   
             user_script = __import__(user_module)
  
-            user_script.run_script(self.iface)
-            self.console.edit.insertTaggedText("\nRunning script: %s" % script_name, 1)
+            abnormal_exit = False
+            self.last_traceback = ''
+            try:
+                user_script.run_script(self.iface)
+            except:
+                # show traceback
+                #(etype, value, traceback) = sys.exc_info()
+                #QMessageBox.information(None, "Traceback", str(dir(traceback)))
+                tb = TracebackDialog()
+                tb.ui.teTraceback.setTextColor(QColor(Qt.red))
+                self.last_traceback = traceback.format_exc()
+                tb.ui.teTraceback.setText(traceback.format_exc())
+                tb.show()
+                tb.exec_()
+                abnormal_exit = True
+                #QMessageBox.information(None, "Error", traceback.format_exc())
+                
             output = sys.stdout.get_and_clean_data()
-            if output:
-                #QMessageBox.information(None, "Script Output", output)
-                self.console.setVisible(True)
-                self.console.edit.insertTaggedText("SCRIPTRUNNER:\n%s" % output, 3)
-                self.console.edit.insertTaggedText("Completed script: %s" % script_name, 1)
-                self.console.edit.displayPrompt()
 
-            self.main_window.statusbar.showMessage("Completed script: %s" % script)
-            self.console.edit.ensureCursorVisible()
+            if self.log_output:
+                log_text = "Running script %s in %s\n%s" % (script_name, script_dir, output)
+                if self.last_traceback != '':
+                    log_text += "\n%s\nAbnormal termination" % (self.last_traceback) 
+                self.log_results(script_dir, script_name, log_text)
+
+            # display output in console
+            if self.display_in_console:
+                if self.clear_console:
+                    self.console.edit.clearConsole()
+                self.console.edit.insertTaggedText("\nRunning script: %s" % script_name, 1)
+                if output:
+                    #QMessageBox.information(None, "Script Output", output)
+                    self.console.setVisible(True)
+                    self.console.edit.insertTaggedText("SCRIPTRUNNER:\n%s" % output, 3)
+                    if abnormal_exit:
+                        self.console.edit.insertTaggedText("Abnormal termination", 1)
+                    self.console.edit.insertTaggedText("Completed script: %s" % script_name, 1)
+                    self.console.edit.displayPrompt()
+                    self.console.edit.ensureCursorVisible()
+
+            self.main_window.statusbar.showMessage("Completed script: %s" % script_name)
 
     def run(self):
         """
@@ -340,13 +381,52 @@ class ScriptRunner:
         script.close()
         return run_method
 
+    def current_script_changed(self):
+        if self.auto_display:
+            self.info()
+
+
     def update_settings(self):
         """
         Update the setting for the plugin---at present just
         the list of scripts.
         """
-        settings = QSettings()
-        settings.setValue("ScriptRunner/scripts", QVariant(self.list_of_scripts))
+        self.settings.setValue("ScriptRunner/scripts", QVariant(self.list_of_scripts))
 
+    def set_preferences(self):
+        prefs_dlg = PreferencesDialog()
+        prefs_dlg.show()
+        if prefs_dlg.exec_() == QDialog.Accepted:
+            self.fetch_settings()
+            self.configure_console()
       
+    def fetch_settings(self):
+        self.auto_display = self.settings.value("ScriptRunner/auto_display", True).toBool()
+        self.clear_console = self.settings.value("ScriptRunner/clear_console", True).toBool()
+        self.display_in_console = self.settings.value("ScriptRunner/display_in_console", True).toBool()
+        self.log_output = self.settings.value("ScriptRunner/log_output_to_disk", False).toBool()
+        self.log_dir = self.settings.value("ScriptRunner/log_directory", "/tmp").toString()
+        self.log_overwrite = self.settings.value("ScriptRunner/log_overwrite", False).toBool()
+
+    def configure_console(self):
+        if self.display_in_console:
+            if (console._console is None):
+                console._console = console.PythonConsole(iface.mainWindow())
+            #console.show_console()
+        
+
+            self.console = console._console
+
+    def log_results(self, script_dir, script_name, output):
+        # open the logfile using mode based on user preference
+        if self.log_overwrite:
+            mode = 'w'
+        else:
+            mode = 'a'
+
+        log_file = open(os.path.join(str(self.log_dir), "%s.log" % script_name), mode)
+        log_file.write("\n---------- Script Runner %s ----------\n%s" % (datetime.datetime.now(), output))
+        log_file.close()
+
+
 

@@ -6,5 +6,6 @@
         <file alias="info_icon">resources/info.png</file>
         <file alias="reload_icon">resources/reload.png</file>
         <file alias="run_icon">resources/run.png</file>
+        <file alias="prefs_icon">resources/prefs.png</file>
     </qresource>
 </RCC>

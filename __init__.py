@@ -4,7 +4,7 @@ This script initializes the plugin, making it known to QGIS.
 ScriptRunner - A QGIS plugin that runs scripts to automate QGIS tasks.
 
 Date: 2012-01-27
-Copyright: (C) 2012 by GeoApt LLC
+Copyright: (C) 2012-2013 by GeoApt LLC
 Email: gsherman@geoapt.com
 
 
@@ -29,7 +29,7 @@ def version():
     """
     Return the version of the plugin.
     """
-    return "Version 0.5"
+    return "Version 0.6"
 def icon():
     """
     Return the name of the icon used in the toolbar.

@@ -21,11 +21,11 @@
 
 PLUGINNAME = scriptrunner
 
-PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py
+PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py preferences_dialog.py traceback_dialog.py scriptrunner_help.py
 
 EXTRAS = icon.png 
 
-UI_FILES = ui_scriptrunner.py mainwindow.py
+UI_FILES = ui_scriptrunner.py mainwindow.py ui_preferences.py ui_traceback.py
 
 RESOURCE_FILES = resources.py
 
