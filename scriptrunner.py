@@ -60,6 +60,15 @@ class ScriptRunner:
 
         self.settings = QSettings()
         self.fetch_settings()
+        if self.log_output:
+            # open the logfile using mode based on user preference
+
+            if self.log_overwrite:
+                mode = 'w'
+            else:
+                mode = 'a'
+
+            self.log_file = open(os.path.join(str(self.log_dir), "scriptrunner.log"), mode)
 
     def initGui(self):
         """
@@ -377,15 +386,6 @@ class ScriptRunner:
                 sys.stdout = self.stdout
                 if self.clear_console:
                     self.stdout.setPlainText('')
-                if self.log_output:
-                    # open the logfile using mode based on user preference
-
-                    if self.log_overwrite:
-                        mode = 'w'
-                    else:
-                        mode = 'a'
-
-                    self.log_file = open(os.path.join(str(self.log_dir), "%s.log" % script_name), mode)
                     #self.log_file.write("Running script %s in %s\n" % (script_name, script_dir))
                 print "----------%s----------\nRunning %s in: %s\n" % (datetime.datetime.now(), script_name, script_dir)
                 
@@ -408,8 +408,7 @@ class ScriptRunner:
                 print "Completed script: %s" % script_name
                 sys.stdout = self.old_stdout
                 if self.log_output:
-                    if self.log_file:
-                        self.log_file.close()
+                    self.log_file.flush()
                 
             #output = sys.stdout.get_and_clean_data()
 
@@ -545,11 +544,10 @@ class ScriptRunner:
         if self.log_output:
             try:
                 self.log_file.write(text)
-                text = ''
             except:
                 print traceback.format_exc()
             finally:
-                text = ''
+                sys.__stdout__.flush()
 
     def restore_window_position(self):
         self.mw.restoreGeometry(self.settings.value("ScriptRunner/geometry").toByteArray())
