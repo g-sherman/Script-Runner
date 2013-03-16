@@ -136,6 +136,13 @@ class ScriptRunner:
         self.toolbar.addAction(self.prefs_action)
         self.prefs_action.triggered.connect(self.set_preferences)
 
+        # action for closing ScriptRunner
+        self.exit_action = QAction(QIcon(":plugins/scriptrunner/exit_icon"),
+                "Close", self.mw)
+        self.toolbar.addAction(self.exit_action)
+        QObject.connect(self.exit_action, SIGNAL("triggered()"), self.close_window)
+
+
         self.toggle_console_action = QAction(QIcon(":/plugins/scriptrunner/toggle_icon"),"Toggle Console", self.mw)
         self.toggle_console_action.triggered.connect(self.toggle_console)
 
@@ -528,6 +535,9 @@ class ScriptRunner:
             script = item.toolTip()
             # get the path and add it to sys.path
             QDesktopServices.openUrl(QUrl("file://%s" % script))
+
+    def close_window(self):
+        self.mw.hide()
 
     #@pyqtSlot(str)
     def output_posted(self, text):

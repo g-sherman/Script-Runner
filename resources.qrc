@@ -9,6 +9,7 @@
         <file alias="prefs_icon">resources/prefs.png</file>
         <file alias="clear_icon">resources/clear.png</file>
         <file alias="edit_icon">resources/edit.png</file>
+        <file alias="exit_icon">resources/exit.png</file>
         <file alias="toggle_icon">resources/toggle_console.png</file>
     </qresource>
 </RCC>
