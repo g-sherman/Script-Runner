@@ -136,8 +136,11 @@ class ScriptRunner:
         self.toolbar.addAction(self.prefs_action)
         self.prefs_action.triggered.connect(self.set_preferences)
 
-        self.toggle_console_action = QAction("Toggle Console", self.mw)
+        self.toggle_console_action = QAction(QIcon(":/plugins/scriptrunner/toggle_icon"),"Toggle Console", self.mw)
         self.toggle_console_action.triggered.connect(self.toggle_console)
+
+        self.edit_action = QAction(QIcon(":/plugins/scriptrunner/edit_icon"),"Edit script in external editor", self.mw)
+        self.edit_action.triggered.connect(self.edit_script)
 
         # setup the splitter and list/text browser and mainwindow layout
         self.layout = QHBoxLayout(self.main_window.frame)
@@ -155,6 +158,7 @@ class ScriptRunner:
         self.context_menu.addAction(self.run_action)
         self.context_menu.addAction(self.remove_action)
         self.context_menu.addAction(self.reload_action)
+        self.context_menu.addAction(self.edit_action)
         self.context_menu.addSeparator()
         self.context_menu.addAction(self.clear_action)
         self.context_menu.addAction(self.toggle_console_action)
@@ -376,7 +380,7 @@ class ScriptRunner:
 
                     self.log_file = open(os.path.join(str(self.log_dir), "%s.log" % script_name), mode)
                     #self.log_file.write("Running script %s in %s\n" % (script_name, script_dir))
-                print "----------\nRunning script %s in %s\n" % (script_name, script_dir)
+                print "----------%s----------\nRunning %s in: %s\n" % (datetime.datetime.now(), script_name, script_dir)
                 
                 
                 user_script.run_script(self.iface)
@@ -500,7 +504,7 @@ class ScriptRunner:
             mode = 'a'
 
         log_file = open(os.path.join(str(self.log_dir), "%s.log" % script_name), mode)
-        log_file.write("\n---------- Script Runner %s ----------\n%s" % (datetime.datetime.now(), output))
+        #log_file.write("\n---------- Script Runner %s ----------\n%s" % (datetime.datetime.now(), output))
         log_file.close()
 
 
@@ -518,14 +522,24 @@ class ScriptRunner:
     def toggle_console(self):
         self.stdout_dock.setVisible(not self.stdout_dock.isVisible())
 
-    @pyqtSlot(str)
+    def edit_script(self):
+        item = self.scriptList.currentItem()
+        if item != None:
+            script = item.toolTip()
+            # get the path and add it to sys.path
+            QDesktopServices.openUrl(QUrl("file://%s" % script))
+
+    #@pyqtSlot(str)
     def output_posted(self, text):
         #QMessageBox.information(None, "New Stdout", text)
         if self.log_output:
             try:
                 self.log_file.write(text)
+                text = ''
             except:
-                pass
+                print traceback.format_exc()
+            finally:
+                text = ''
 
     def restore_window_position(self):
         self.mw.restoreGeometry(self.settings.value("ScriptRunner/geometry").toByteArray())

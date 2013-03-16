@@ -8,5 +8,7 @@
         <file alias="run_icon">resources/run.png</file>
         <file alias="prefs_icon">resources/prefs.png</file>
         <file alias="clear_icon">resources/clear.png</file>
+        <file alias="edit_icon">resources/edit.png</file>
+        <file alias="toggle_icon">resources/toggle_console.png</file>
     </qresource>
 </RCC>
