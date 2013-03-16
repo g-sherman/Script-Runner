@@ -118,16 +118,17 @@ def htmlabout():
     <li>Syntax highlighting taken from:
     <a href="http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting">http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting</a> "Based on existing work by Carson Farmer and Christophe Kibleur,
        and an example on the SciPres wiki."</li>
-   <li>Console output adapted from code by Liam Veitch</li>
    </ul>
        <h4>Changelog</h4>
        <ul>
        <li>0.6</li>
        <ul>
-       <li>Script output can now be directed to the Python console<li>
+       <li>Script output is logged to the Script Runner window<li>
        <li>Script output can be logged to disk</li>
        <li>Preferences dialog allows control of output and logging options</li>
        <li>Exceptions in scripts are displayed without interfering with console/logging output</li>
+       <li>Context menu (right-click) to access script functions</li>
+
 
        </ul>
        <li>0.5</li>

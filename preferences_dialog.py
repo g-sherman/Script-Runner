@@ -57,7 +57,7 @@ class PreferencesDialog(QtGui.QDialog):
         log_dir = self.settings.value("ScriptRunner/log_directory", "/tmp")
         self.ui.leLogDirectory.setText(log_dir.toString())
 
-        log_overwite = self.settings.value("ScriptRunner/log_overwite", False)
+        log_overwite = self.settings.value("ScriptRunner/log_overwrite", False)
         self.ui.cbOverwriteLogFile.setChecked(log_overwite.toBool())
 
         # disable controls based on parent settings

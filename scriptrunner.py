@@ -34,6 +34,8 @@ from scriptrunner_mainwindow import ScriptRunnerMainWindow
 from preferences_dialog import PreferencesDialog
 # Import the traceback dialog
 from traceback_dialog import TracebackDialog
+# Import the stdout dialog
+from stdout_textwidget import StdoutTextEdit
 # Import the help module
 from scriptrunner_help import *
 #from highlighter import *
@@ -58,7 +60,6 @@ class ScriptRunner:
 
         self.settings = QSettings()
         self.fetch_settings()
-        self.configure_console()
 
     def initGui(self):
         """
@@ -67,6 +68,7 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
+        self.mw.setWindowTitle("Script Runner Version 0.6")
         # fetch the list of stored scripts from user setting
         stored_scripts = self.settings.value("ScriptRunner/scripts")
         self.list_of_scripts = stored_scripts.toList()
@@ -100,6 +102,7 @@ class ScriptRunner:
         self.toolbar.addAction(self.run_action)
         QObject.connect(self.run_action,
                 SIGNAL("triggered()"), self.run_script)
+
 
         # action for getting info about a script
         self.info_action = QAction(QIcon(":plugins/scriptrunner/info_icon"),
@@ -136,6 +139,15 @@ class ScriptRunner:
         # connect double click to info slot
         QObject.connect(self.scriptList, SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.item_info)
         self.scriptList.currentItemChanged.connect(self.current_script_changed)
+        self.scriptList.customContextMenuRequested.connect(self.show_context_menu)
+        self.scriptList.setContextMenuPolicy(Qt.CustomContextMenu)
+        ## Context menu for the scriptList
+        self.context_menu = QMenu(self.scriptList)
+        self.context_menu.addAction(self.run_action)
+        self.context_menu.addAction(self.info_action)
+        self.context_menu.addAction(self.remove_action)
+        self.context_menu.addAction(self.reload_action)
+
 
         self.splitter.addWidget(self.scriptList)
 
@@ -157,10 +169,26 @@ class ScriptRunner:
         self.textBrowserAbout.setOpenExternalLinks(True)
         self.tabWidget.addTab(self.textBrowserAbout, "About")
 
+        self.tabWidget.setMinimumHeight(320)
+
         self.splitter.addWidget(self.tabWidget)
         # set the sizes for the splitter
         split_size = [150, 350]
         self.splitter.setSizes(split_size)
+
+        # set up the stdout dock
+        self.stdout_dock = QDockWidget(self.mw)
+        self.stdout_dock.setWindowTitle("Script Runner - Output Console")
+        self.stdout_textedit = StdoutTextEdit()
+        self.stdout_dock.setWidget(self.stdout_textedit)
+        self.mw.addDockWidget(Qt.BottomDockWidgetArea, self.stdout_dock)
+
+        # cursor for the StdoutTextEdit
+        self.cursor = QTextCursor(self.stdout_textedit.textCursor())
+        self.stdout_textedit.setTextCursor(self.cursor)
+
+
+        self.configure_console()
         
         if len(self.list_of_scripts) == 0:
             # make the help tab visible if no scripts are loaded
@@ -257,7 +285,7 @@ class ScriptRunner:
                 doc_string = "You Have no Docstring. You really should add one..."
             else:
                 doc_string = doc_string.replace('\n', '<br>')
-            html = "<h3>%s</h3><h4>Doc String:</h4>%s" % (script, doc_string)
+            html = "<h4>%s</h4><h4>Doc String:</h4>%s" % (script, doc_string)
 
             # populate the source tab
             source_code = "<pre>%s</pre>" % self.get_source(script) #inspect.getsource(sys.modules[user_module])
@@ -321,6 +349,24 @@ class ScriptRunner:
             abnormal_exit = False
             self.last_traceback = ''
             try:
+                # grab stdout
+                self.old_stdout = sys.stdout
+                sys.stdout = self.stdout
+                if self.log_output:
+                    # open the logfile using mode based on user preference
+
+                    if self.log_overwrite:
+                        mode = 'w'
+                    else:
+                        mode = 'a'
+
+                    print "Log open mode is %s" % mode
+
+                    self.log_file = open(os.path.join(str(self.log_dir), "%s.log" % script_name), mode)
+                    #self.log_file.write("Running script %s in %s\n" % (script_name, script_dir))
+                print "----------\nRunning script %s in %s\n" % (script_name, script_dir)
+                
+                
                 user_script.run_script(self.iface)
             except:
                 # show traceback
@@ -333,31 +379,39 @@ class ScriptRunner:
                 tb.show()
                 tb.exec_()
                 abnormal_exit = True
+                print "\n%s\nAbnormal termination" % self.last_traceback 
                 #QMessageBox.information(None, "Error", traceback.format_exc())
+            finally:
+                print "Completed script: %s" % script_name
+                sys.stdout = self.old_stdout
+                if self.log_output:
+                    if self.log_file:
+                        self.log_file.close()
                 
-            output = sys.stdout.get_and_clean_data()
+            #output = sys.stdout.get_and_clean_data()
+            output = ""
 
-            if self.log_output:
-                log_text = "Running script %s in %s\n%s" % (script_name, script_dir, output)
-                if self.last_traceback != '':
-                    log_text += "\n%s\nAbnormal termination" % (self.last_traceback) 
-                self.log_results(script_dir, script_name, log_text)
-
-            # display output in console
-            if self.display_in_console:
-                if self.clear_console:
-                    self.console.edit.clearConsole()
-                self.console.edit.insertTaggedText("\nRunning script: %s" % script_name, 1)
-                if output:
-                    #QMessageBox.information(None, "Script Output", output)
-                    self.console.setVisible(True)
-                    self.console.edit.insertTaggedText("SCRIPTRUNNER:\n%s" % output, 3)
-                    if abnormal_exit:
-                        self.console.edit.insertTaggedText("Abnormal termination", 1)
-                    self.console.edit.insertTaggedText("Completed script: %s" % script_name, 1)
-                    self.console.edit.displayPrompt()
-                    self.console.edit.ensureCursorVisible()
-
+#            if self.log_output:
+#                log_text = "Running script %s in %s\n%s" % (script_name, script_dir, output)
+#                if self.last_traceback != '':
+#                    log_text += "\n%s\nAbnormal termination" % (self.last_traceback) 
+#                self.log_results(script_dir, script_name, log_text)
+#
+#            # display output in console
+#            if self.display_in_console:
+#                if self.clear_console:
+#                    self.console.edit.clearConsole()
+#                self.console.edit.insertTaggedText("\nRunning script: %s" % script_name, 1)
+#                if output:
+#                    #QMessageBox.information(None, "Script Output", output)
+#                    self.console.setVisible(True)
+#                    self.console.edit.insertTaggedText("SCRIPTRUNNER:\n%s" % output, 3)
+#                    if abnormal_exit:
+#                        self.console.edit.insertTaggedText("Abnormal termination", 1)
+#                    self.console.edit.insertTaggedText("Completed script: %s" % script_name, 1)
+#                    self.console.edit.displayPrompt()
+#                    self.console.edit.ensureCursorVisible()
+#
             self.main_window.statusbar.showMessage("Completed script: %s" % script_name)
 
     def run(self):
@@ -409,13 +463,17 @@ class ScriptRunner:
         self.log_overwrite = self.settings.value("ScriptRunner/log_overwrite", False).toBool()
 
     def configure_console(self):
-        if self.display_in_console:
-            if (console._console is None):
-                console._console = console.PythonConsole(iface.mainWindow())
-            #console.show_console()
-        
+        self.stdout = self.stdout_textedit
+        self.stdout.new_output.connect(self.output_posted)
+        self.stdout.show()
 
-            self.console = console._console
+#        if self.display_in_console:
+#            if (console._console is None):
+#                console._console = console.PythonConsole(iface.mainWindow())
+#            #console.show_console()
+#        
+#
+#            self.console = console._console
 
     def log_results(self, script_dir, script_name, output):
         # open the logfile using mode based on user preference
@@ -429,4 +487,18 @@ class ScriptRunner:
         log_file.close()
 
 
+    def show_context_menu(self, pos):
+        #self.context_menu.popup(point)
+        #QMessageBox.information(None, "Popup Menu", "Pop it up")
+        self.context_menu.exec_(self.scriptList.mapToGlobal(pos))
+
+    @pyqtSlot(str)
+    def output_posted(self, text):
+        #QMessageBox.information(None, "New Stdout", text)
+        if self.log_output:
+            try:
+                self.log_file.write(text)
+            except:
+                pass
+            
 
