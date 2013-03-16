@@ -124,12 +124,20 @@ class ScriptRunner:
         self.toolbar.addAction(self.remove_action)
         QObject.connect(self.remove_action, SIGNAL("triggered()"), self.remove_script)
 
+        # action for clear console
+        self.clear_action = QAction(QIcon(":plugins/scriptrunner/clear_icon"),
+                "Clear Console", self.mw)
+        self.toolbar.addAction(self.clear_action)
+        self.clear_action.triggered.connect(self.sweep_console)
+
         # action for setting prevferences
         self.prefs_action = QAction(QIcon(":plugins/scriptrunner/prefs_icon"),
                 "Preferences", self.mw)
         self.toolbar.addAction(self.prefs_action)
         self.prefs_action.triggered.connect(self.set_preferences)
-        #QObject.connect(self.prefs_action, SIGNAL("triggered()"), self.prefs_script)
+
+        self.toggle_console_action = QAction("Toggle Console", self.mw)
+        self.toggle_console_action.triggered.connect(self.toggle_console)
 
         # setup the splitter and list/text browser and mainwindow layout
         self.layout = QHBoxLayout(self.main_window.frame)
@@ -147,6 +155,9 @@ class ScriptRunner:
         self.context_menu.addAction(self.run_action)
         self.context_menu.addAction(self.remove_action)
         self.context_menu.addAction(self.reload_action)
+        self.context_menu.addSeparator()
+        self.context_menu.addAction(self.clear_action)
+        self.context_menu.addAction(self.toggle_console_action)
 
 
         self.splitter.addWidget(self.scriptList)
@@ -353,6 +364,8 @@ class ScriptRunner:
                 # grab stdout
                 self.old_stdout = sys.stdout
                 sys.stdout = self.stdout
+                if self.clear_console:
+                    self.stdout.setPlainText('')
                 if self.log_output:
                     # open the logfile using mode based on user preference
 
@@ -360,8 +373,6 @@ class ScriptRunner:
                         mode = 'w'
                     else:
                         mode = 'a'
-
-                    print "Log open mode is %s" % mode
 
                     self.log_file = open(os.path.join(str(self.log_dir), "%s.log" % script_name), mode)
                     #self.log_file.write("Running script %s in %s\n" % (script_name, script_dir))
@@ -390,7 +401,6 @@ class ScriptRunner:
                         self.log_file.close()
                 
             #output = sys.stdout.get_and_clean_data()
-            output = ""
 
 #            if self.log_output:
 #                log_text = "Running script %s in %s\n%s" % (script_name, script_dir, output)
@@ -448,6 +458,9 @@ class ScriptRunner:
         """
         self.settings.setValue("ScriptRunner/scripts", QVariant(self.list_of_scripts))
 
+    def sweep_console(self):
+        self.stdout_textedit.setPlainText('')
+
     def set_preferences(self):
         prefs_dlg = PreferencesDialog()
         prefs_dlg.show()
@@ -458,7 +471,7 @@ class ScriptRunner:
     def fetch_settings(self):
         self.auto_display = self.settings.value("ScriptRunner/auto_display", True).toBool()
         self.clear_console = self.settings.value("ScriptRunner/clear_console", True).toBool()
-        self.display_in_console = self.settings.value("ScriptRunner/display_in_console", True).toBool()
+        self.show_console = self.settings.value("ScriptRunner/show_console", True).toBool()
         self.log_output = self.settings.value("ScriptRunner/log_output_to_disk", False).toBool()
         self.log_dir = self.settings.value("ScriptRunner/log_directory", "/tmp").toString()
         self.log_overwrite = self.settings.value("ScriptRunner/log_overwrite", False).toBool()
@@ -467,6 +480,9 @@ class ScriptRunner:
         self.stdout = self.stdout_textedit
         self.stdout.new_output.connect(self.output_posted)
         self.stdout.show()
+
+        # set the visibility of the console based on user preference
+        self.stdout_dock.setVisible(self.show_console)
 
 #        if self.display_in_console:
 #            if (console._console is None):
@@ -492,6 +508,15 @@ class ScriptRunner:
         #self.context_menu.popup(point)
         #QMessageBox.information(None, "Popup Menu", "Pop it up")
         self.context_menu.exec_(self.scriptList.mapToGlobal(pos))
+
+    def toggle_console__(self):
+        if self.stdout_textedit.isVisible():
+            self.stdout_textedit.hide()
+        else:
+            self.stdout_textedit.show()
+
+    def toggle_console(self):
+        self.stdout_dock.setVisible(not self.stdout_dock.isVisible())
 
     @pyqtSlot(str)
     def output_posted(self, text):

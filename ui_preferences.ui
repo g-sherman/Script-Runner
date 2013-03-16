@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>554</width>
-    <height>298</height>
+    <width>532</width>
+    <height>293</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Script Runner Preferences</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_3">
+  <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="sizePolicy">
@@ -43,50 +43,11 @@
      <property name="title">
       <string>Output and Logging</string>
      </property>
-     <widget class="QCheckBox" name="cbShowOutput">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>30</y>
-        <width>212</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Show script output in console</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="cbClearConsole">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>51</y>
-        <width>259</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Clear console before running a script</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="cbLogToDisk">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>72</y>
-        <width>181</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Log script output to disk</string>
-      </property>
-     </widget>
      <widget class="QWidget" name="">
       <property name="geometry">
        <rect>
-        <x>12</x>
-        <y>98</y>
+        <x>10</x>
+        <y>110</y>
         <width>433</width>
         <height>58</height>
        </rect>
@@ -151,11 +112,44 @@
        </item>
       </layout>
      </widget>
-     <zorder>cbShowOutput</zorder>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>8</x>
+        <y>40</y>
+        <width>259</width>
+        <height>62</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="cbShowConsole">
+         <property name="text">
+          <string>Show console at startup</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="cbClearConsole">
+         <property name="text">
+          <string>Clear console before running a script</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="cbLogToDisk">
+         <property name="text">
+          <string>Log script output to disk</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <zorder>cbClearConsole</zorder>
      <zorder>cbLogToDisk</zorder>
      <zorder></zorder>
      <zorder>groupBox</zorder>
+     <zorder>cbShowConsole</zorder>
     </widget>
    </item>
    <item row="2" column="0">
@@ -171,7 +165,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>cbShowOutput</tabstop>
   <tabstop>cbClearConsole</tabstop>
   <tabstop>cbLogToDisk</tabstop>
   <tabstop>leLogDirectory</tabstop>

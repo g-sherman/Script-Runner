@@ -38,7 +38,6 @@ class PreferencesDialog(QtGui.QDialog):
         self.ui.tbSetLogDirectory.clicked.connect(self.set_log_dir)
 
         # connect the checkbox state change
-        self.ui.cbShowOutput.stateChanged.connect(self.changed_show_output)
         self.ui.cbLogToDisk.stateChanged.connect(self.changed_log_to_disk)
 
         self.settings = QtCore.QSettings()
@@ -47,10 +46,10 @@ class PreferencesDialog(QtGui.QDialog):
     def restore_settings(self):
         auto_display = self.settings.value("ScriptRunner/auto_display", True)
         self.ui.cbAutoDisplay.setChecked(auto_display.toBool())
+        show_console = self.settings.value("ScriptRunner/show_console", True)
+        self.ui.cbShowConsole.setChecked(show_console.toBool())
         clear_console = self.settings.value("ScriptRunner/clear_console", True)
         self.ui.cbClearConsole.setChecked(clear_console.toBool())
-        display_in_console = self.settings.value("ScriptRunner/display_in_console", True)
-        self.ui.cbShowOutput.setChecked(display_in_console.toBool())
         log_output = self.settings.value("ScriptRunner/log_output_to_disk", False)
         self.ui.cbLogToDisk.setChecked(log_output.toBool())
 
@@ -61,7 +60,6 @@ class PreferencesDialog(QtGui.QDialog):
         self.ui.cbOverwriteLogFile.setChecked(log_overwite.toBool())
 
         # disable controls based on parent settings
-        self.changed_show_output(self.ui.cbShowOutput.checkState())
         self.changed_log_to_disk(self.ui.cbLogToDisk.checkState())
 
  
@@ -72,9 +70,6 @@ class PreferencesDialog(QtGui.QDialog):
             # store the log_dir in settings
             self.ui.leLogDirectory.setText(self.log_dir)
 
-    def changed_show_output(self, state):
-         self.ui.cbClearConsole.setEnabled(state == Qt.Checked)
-
     def changed_log_to_disk(self, state):
          self.ui.leLogDirectory.setEnabled(state == Qt.Checked)
          self.ui.tbSetLogDirectory.setEnabled(state == Qt.Checked)
@@ -84,7 +79,7 @@ class PreferencesDialog(QtGui.QDialog):
         #QtGui.QMessageBox.information(None, "Save", "Saving Settings")
         self.settings.setValue("ScriptRunner/auto_display", self.ui.cbAutoDisplay.checkState() == Qt.Checked)
         self.settings.setValue("ScriptRunner/clear_console", self.ui.cbClearConsole.checkState() == Qt.Checked)
-        self.settings.setValue("ScriptRunner/display_in_console", self.ui.cbShowOutput.checkState() == Qt.Checked)
+        self.settings.setValue("ScriptRunner/show_console", self.ui.cbShowConsole.checkState() == Qt.Checked)
         self.settings.setValue("ScriptRunner/log_output_to_disk", self.ui.cbLogToDisk.checkState() == Qt.Checked)
         self.settings.setValue("ScriptRunner/log_directory", self.ui.leLogDirectory.text())
         self.settings.setValue("ScriptRunner/log_overwrite", self.ui.cbOverwriteLogFile.checkState() == Qt.Checked)

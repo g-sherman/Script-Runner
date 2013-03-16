@@ -30,7 +30,7 @@ class ScriptRunnerMainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.settings = QSettings()
+        self.settings = QtCore.QSettings()
 
     def closeEvent(self, event):
         self.settings.setValue("ScriptRunner/geometry", self.saveGeometry())
