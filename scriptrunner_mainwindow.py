@@ -30,9 +30,11 @@ class ScriptRunnerMainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.settings = QSettings()
 
     def closeEvent(self, event):
-        settings = QtCore.QSettings()
-        settings.setValue("ScriptRunner/geometry", self.saveGeometry())
-        settings.setValue("ScriptRunner/window_state", self.saveState())
+        self.settings.setValue("ScriptRunner/geometry", self.saveGeometry())
+        #settings.setValue("ScriptRunner/window_state", self.saveState())
         #self.closeEvent(event)
+    def moveEvent(self, event):
+        self.settings.setValue("ScriptRunner/geometry", self.saveGeometry())

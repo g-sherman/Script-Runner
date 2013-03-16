@@ -25,7 +25,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from qgis.core import *
-from qgis import console
+#from qgis import console
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -145,7 +145,6 @@ class ScriptRunner:
         ## Context menu for the scriptList
         self.context_menu = QMenu(self.scriptList)
         self.context_menu.addAction(self.run_action)
-        self.context_menu.addAction(self.info_action)
         self.context_menu.addAction(self.remove_action)
         self.context_menu.addAction(self.reload_action)
 
@@ -503,13 +502,7 @@ class ScriptRunner:
             except:
                 pass
 
-    def moveEvent(self, event):
-        QMessageBox.information(None, "Move", "Move event captured")
-        self.settings.setValue("ScriptRunner/geometry", self.mw.saveGeometry())
-        self.settings.setValue("ScriptRunner/window_state", self.mw.saveState())
-        self.mw.moveEvent(event)
-
     def restore_window_position(self):
         self.mw.restoreGeometry(self.settings.value("ScriptRunner/geometry").toByteArray())
-        self.mw.restoreState(self.settings.value("ScriptRunner/window_state").toByteArray())
+        #self.mw.restoreState(self.settings.value("ScriptRunner/window_state").toByteArray())
 
