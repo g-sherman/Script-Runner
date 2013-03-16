@@ -69,6 +69,7 @@ class ScriptRunner:
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
         self.mw.setWindowTitle("Script Runner Version 0.6")
+        self.restore_window_position()
         # fetch the list of stored scripts from user setting
         stored_scripts = self.settings.value("ScriptRunner/scripts")
         self.list_of_scripts = stored_scripts.toList()
@@ -200,6 +201,7 @@ class ScriptRunner:
                 item = QListWidgetItem(script_name, self.scriptList)
                 item.setToolTip(script.toString())
         self.scriptList.setCurrentRow(0)
+
 
     def unload(self):
         """
@@ -500,5 +502,14 @@ class ScriptRunner:
                 self.log_file.write(text)
             except:
                 pass
-            
+
+    def moveEvent(self, event):
+        QMessageBox.information(None, "Move", "Move event captured")
+        self.settings.setValue("ScriptRunner/geometry", self.mw.saveGeometry())
+        self.settings.setValue("ScriptRunner/window_state", self.mw.saveState())
+        self.mw.moveEvent(event)
+
+    def restore_window_position(self):
+        self.mw.restoreGeometry(self.settings.value("ScriptRunner/geometry").toByteArray())
+        self.mw.restoreState(self.settings.value("ScriptRunner/window_state").toByteArray())
 
