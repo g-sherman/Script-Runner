@@ -387,7 +387,7 @@ class ScriptRunner:
                 if self.clear_console:
                     self.stdout.setPlainText('')
                     #self.log_file.write("Running script %s in %s\n" % (script_name, script_dir))
-                print "----------%s----------\nRunning %s in: %s\n" % (datetime.datetime.now(), script_name, script_dir)
+                print "----------%s----------\nRunning %s in: %s" % (datetime.datetime.now(), script_name, script_dir)
                 
                 
                 user_script.run_script(self.iface)
