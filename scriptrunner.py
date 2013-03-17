@@ -70,7 +70,8 @@ class ScriptRunner:
             else:
                 mode = 'a'
 
-            self.log_file = open(os.path.join(str(self.log_dir), "scriptrunner.log"), mode)
+            self.log_file = open(os.path.join(str(self.log_dir),
+                                              "scriptrunner.log"), mode)
 
     def initGui(self):
         """
@@ -86,10 +87,10 @@ class ScriptRunner:
         self.list_of_scripts = stored_scripts.toList()
 
         # Create action that will start plugin configuration
-        self.action = QAction(QIcon(":/plugins/scriptrunner/icon.png"), \
-            "ScriptRunner", self.iface.mainWindow())
+        self.action = QAction(QIcon(":/plugins/scriptrunner/icon.png"),
+                              "ScriptRunner", self.iface.mainWindow())
         # connect the action to the run method
-        QObject.connect(self.action, SIGNAL("triggered()"), self.run)
+        self.action.triggered.connect(self.run)
 
 #        # Add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
@@ -103,61 +104,62 @@ class ScriptRunner:
         ## Action setup
         # action for adding a script
         self.add_action = QAction(QIcon(":plugins/scriptrunner/add_icon"),
-                "Add Script", self.mw)
+                                  "Add Script", self.mw)
         self.toolbar.addAction(self.add_action)
-        QObject.connect(self.add_action,
-                SIGNAL("triggered()"), self.add_script)
+        self.add_action.triggered.connect(self.add_script)
 
         # action for running a script
         self.run_action = QAction(QIcon(":plugins/scriptrunner/run_icon"),
-                "Run Script", self.mw)
+                                  "Run Script", self.mw)
         self.toolbar.addAction(self.run_action)
-        QObject.connect(self.run_action,
-                SIGNAL("triggered()"), self.run_script)
-
+        self.run_action.triggered.connect(self.run_script)
 
         # action for getting info about a script
         self.info_action = QAction(QIcon(":plugins/scriptrunner/info_icon"),
-                "Script Info", self.mw)
+                                   "Script Info", self.mw)
         self.toolbar.addAction(self.info_action)
-        QObject.connect(self.info_action, SIGNAL("triggered()"), self.info)
-
+        self.info_action.triggered.connect(self.info)
 
         # action for reloading a script
-        self.reload_action = QAction(QIcon(":plugins/scriptrunner/reload_icon"),
-                "Reload Script", self.mw)
+        self.reload_action = QAction(QIcon(
+            ":plugins/scriptrunner/reload_icon"),
+            "Reload Script", self.mw)
         self.toolbar.addAction(self.reload_action)
-        QObject.connect(self.reload_action, SIGNAL("triggered()"), self.reload_script)
+        self.reload_action.triggered.connect(self.reload_script)
 
         # action for removing a script
-        self.remove_action = QAction(QIcon(":plugins/scriptrunner/cancel_icon"),
-                "Remove Script", self.mw)
+        self.remove_action = QAction(QIcon(
+            ":plugins/scriptrunner/cancel_icon"),
+            "Remove Script", self.mw)
         self.toolbar.addAction(self.remove_action)
-        QObject.connect(self.remove_action, SIGNAL("triggered()"), self.remove_script)
+        self.remove_action.triggered.connect(self.remove_script)
 
         # action for clear console
         self.clear_action = QAction(QIcon(":plugins/scriptrunner/clear_icon"),
-                "Clear Console", self.mw)
+                                    "Clear Console", self.mw)
         self.toolbar.addAction(self.clear_action)
         self.clear_action.triggered.connect(self.sweep_console)
 
         # action for setting prevferences
         self.prefs_action = QAction(QIcon(":plugins/scriptrunner/prefs_icon"),
-                "Preferences", self.mw)
+                                    "Preferences", self.mw)
         self.toolbar.addAction(self.prefs_action)
         self.prefs_action.triggered.connect(self.set_preferences)
 
         # action for closing ScriptRunner
         self.exit_action = QAction(QIcon(":plugins/scriptrunner/exit_icon"),
-                "Close", self.mw)
+                                   "Close", self.mw)
         self.toolbar.addAction(self.exit_action)
-        QObject.connect(self.exit_action, SIGNAL("triggered()"), self.close_window)
+        self.exit_action.triggered.connect(self.close_window)
 
-
-        self.toggle_console_action = QAction(QIcon(":/plugins/scriptrunner/toggle_icon"),"Toggle Console", self.mw)
+        self.toggle_console_action = QAction(
+            QIcon(":/plugins/scriptrunner/toggle_icon"),
+            "Toggle Console", self.mw)
         self.toggle_console_action.triggered.connect(self.toggle_console)
 
-        self.edit_action = QAction(QIcon(":/plugins/scriptrunner/edit_icon"),"Edit script in external editor", self.mw)
+        self.edit_action = QAction(
+            QIcon(":/plugins/scriptrunner/edit_icon"),
+            "Edit script in external editor", self.mw)
         self.edit_action.triggered.connect(self.edit_script)
 
         # setup the splitter and list/text browser and mainwindow layout
@@ -167,9 +169,10 @@ class ScriptRunner:
 
         self.scriptList = QListWidget()
         # connect double click to info slot
-        QObject.connect(self.scriptList, SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.item_info)
+        self.scriptList.itemDoubleClicked.connect(self.item_info)
         self.scriptList.currentItemChanged.connect(self.current_script_changed)
-        self.scriptList.customContextMenuRequested.connect(self.show_context_menu)
+        self.scriptList.customContextMenuRequested.connect(
+            self.show_context_menu)
         self.scriptList.setContextMenuPolicy(Qt.CustomContextMenu)
         ## Context menu for the scriptList
         self.context_menu = QMenu(self.scriptList)
@@ -181,7 +184,6 @@ class ScriptRunner:
         self.context_menu.addAction(self.clear_action)
         self.context_menu.addAction(self.toggle_console_action)
 
-
         self.splitter.addWidget(self.scriptList)
 
         self.tabWidget = QTabWidget()
@@ -192,7 +194,7 @@ class ScriptRunner:
         self.textBrowserSource = QTextBrowser()
         self.tabWidget.addTab(self.textBrowserSource, "Source")
         highlighter = PythonHighlighter(self.textBrowserSource.document())
-        
+
         self.textBrowserHelp = QTextBrowser()
         self.textBrowserHelp.setHtml(htmlhelp())
         self.tabWidget.addTab(self.textBrowserHelp, "Help")
@@ -220,20 +222,19 @@ class ScriptRunner:
         self.cursor = QTextCursor(self.stdout_textedit.textCursor())
         self.stdout_textedit.setTextCursor(self.cursor)
 
-
         self.configure_console()
-        
+
         if len(self.list_of_scripts) == 0:
             # make the help tab visible if no scripts are loaded
             self.tabWidget.setCurrentIndex(2)
         else:
             # add the list of scripts fetched from settings
             for script in self.list_of_scripts:
-                (script_dir, script_name) = os.path.split(str(script.toString()))
+                (script_dir, script_name) = os.path.split(
+                    str(script.toString()))
                 item = QListWidgetItem(script_name, self.scriptList)
                 item.setToolTip(script.toString())
         self.scriptList.setCurrentRow(0)
-
 
     def unload(self):
         """
@@ -246,33 +247,40 @@ class ScriptRunner:
         """
         Add a script to the list of scripts that can be executed.
         """
-        script = QFileDialog.getOpenFileName(None, "Add a Python Script", 
-                "", "Python scripts (*.py)")
+        script = QFileDialog.getOpenFileName(None, "Add a Python Script",
+                                             "", "Python scripts (*.py)")
         if script:
             # check to see if we have a run method without importing the script
             if self.have_run_method(script):
                 (script_dir, script_name) = os.path.split(str(script))
                 item = QListWidgetItem(script_name, self.scriptList)
                 item.setToolTip(script)
-                self.main_window.statusbar.showMessage("Added script: %s" % script)
+                self.main_window.statusbar.showMessage(
+                    "Added script: %s" % script)
                 self.list_of_scripts.append(script)
                 self.update_settings()
-                
+
             else:
-                QMessageBox.information(None, "Error", "Your script must have a run_script() function defined. Adding the script failed.")
-                self.main_window.statusbar.showMessage("Failed to add: %s - no run_script function" % script)
+                QMessageBox.information(
+                    None, "Error",
+                    """Your script must have a run_script() function defined.
+                    Adding the script failed.""")
+                self.main_window.statusbar.showMessage(
+                    "Failed to add: %s - no run_script function" % script)
 
     def remove_script(self):
         """
         Remove a script from the list of scripts that can be executed.
         """
         item = self.scriptList.currentItem()
-        if item != None:
-            result = QMessageBox.question(None, "Remove Script", 
-                    "Are you sure you want to remove %s?" % item.text(),
-                    QMessageBox.Yes, QMessageBox.No)
+        if item is not None:
+            result = QMessageBox.question(
+                None, "Remove Script",
+                "Are you sure you want to remove %s?" % item.text(),
+                QMessageBox.Yes, QMessageBox.No)
             if result == QMessageBox.Yes:
-                self.list_of_scripts.pop(self.list_of_scripts.index(item.toolTip()))
+                self.list_of_scripts.pop(
+                    self.list_of_scripts.index(item.toolTip()))
                 self.update_settings()
                 self.scriptList.takeItem(self.scriptList.currentRow())
 
@@ -281,19 +289,21 @@ class ScriptRunner:
         Reload the currently selected script.
         """
         item = self.scriptList.currentItem()
-        if item != None:
+        if item is not None:
             script = item.toolTip()
             (script_dir, script_name) = os.path.split(str(script))
             (user_module, ext) = os.path.splitext(script_name)
-            if sys.modules.has_key(user_module):
+            if user_module in sys.modules:
                 reload(sys.modules[user_module])
-                self.main_window.statusbar.showMessage("Reloaded script: %s" % script)
+                self.main_window.statusbar.showMessage(
+                    "Reloaded script: %s" % script)
                 self.info()
             else:
-                QMessageBox.information(None, "Reload", 
-                        "The %s script was not reloaded since it hasn't been imported yet" % user_module)
+                QMessageBox.information(
+                    None, "Reload",
+                    """The %s script was not reloaded since it hasn't
+                    been imported yet""" % user_module)
 
-                
     def item_info(self, item):
         self.info(item)
 
@@ -302,45 +312,49 @@ class ScriptRunner:
         Display information about the script, including the docstring,
         classes, methods, and functions.
         """
-        if item == None:
+        if item is None:
             item = self.scriptList.currentItem()
-        if item != None: # just in case there is no currentitem and none was passed
+        if item is not None:  # in case no currentitem and none was passed
             script = item.toolTip()
             (script_dir, script_name) = os.path.split(str(script))
             (user_module, ext) = os.path.splitext(script_name)
             if script_dir not in sys.path:
                 sys.path.append(script_dir)
-            if not sys.modules.has_key(user_module):
+            if not user_module in sys.modules:
                 __import__(user_module)
 
             # add the doc string to the info page
             doc_string = inspect.getdoc(sys.modules[user_module])
-            if doc_string == None:
-                doc_string = "You Have no Docstring. You really should add one..."
+            if doc_string is None:
+                doc_string = \
+                    "You Have no Docstring. You really should add one..."
             else:
                 doc_string = doc_string.replace('\n', '<br>')
             html = "<h4>%s</h4><h4>Doc String:</h4>%s" % (script, doc_string)
 
             # populate the source tab
-            source_code = "<pre>%s</pre>" % self.get_source(script) #inspect.getsource(sys.modules[user_module])
+            source_code = "<pre>%s</pre>" % self.get_source(script)
             self.textBrowserSource.setHtml(source_code)
 
-            classes = inspect.getmembers(sys.modules[user_module], inspect.isclass)
+            classes = inspect.getmembers(
+                sys.modules[user_module], inspect.isclass)
 
             # populate classes and methdods
 
             html += "<h4>Classes and Methods for %s</h4><ul>" % script_name
 
             for cls in classes:
-              modinfo = inspect.getmodule(cls[1])
-              if modinfo:
-                  if modinfo.__name__ == user_module:
-                      html += "<li>%s</li>" % cls[0]
-                      html += "<ul>"
-                      for meth in inspect.getmembers(cls[1], inspect.ismethod):
-                        html+= "<li>%s</li>" % meth[0]
-                      html += "</ul></ul>"
-            functions = inspect.getmembers(sys.modules[user_module], inspect.isfunction)
+                modinfo = inspect.getmodule(cls[1])
+                if modinfo:
+                    if modinfo.__name__ == user_module:
+                        html += "<li>%s</li>" % cls[0]
+                        html += "<ul>"
+                        for meth in inspect.getmembers(cls[1],
+                                                       inspect.ismethod):
+                            html += "<li>%s</li>" % meth[0]
+                        html += "</ul></ul>"
+            functions = inspect.getmembers(
+                sys.modules[user_module], inspect.isfunction)
             html += "<h4>Functions in %s</h4><ul>" % script_name
             for func in functions:
                 modinfo = inspect.getmodule(func[1])
@@ -351,12 +365,9 @@ class ScriptRunner:
             self.textBrowser.setHtml(html)
             #self.tabWidget.setCurrentIndex(0)
 
-
-
     def get_source(self, script):
         src = open(script, 'r')
-        source = src.read()  #.replace("\n", '<br>')
-        source 
+        source = src.read()
         src.close()
         return source
 
@@ -367,19 +378,20 @@ class ScriptRunner:
         # get the selected item from the list
         item = self.scriptList.currentItem()
         #settrace()
-        if item != None:
+        if item is not None:
             script = item.toolTip()
-            self.main_window.statusbar.showMessage("Running script: %s" % script)
-    
+            self.main_window.statusbar.showMessage(
+                "Running script: %s" % script)
+
             # get the path and add it to sys.path
             (script_dir, script_name) = os.path.split(str(script))
-   
+
             if script_dir not in sys.path:
                 sys.path.append(script_dir)
             (user_module, ext) = os.path.splitext(script_name)
-  
+
             user_script = __import__(user_module)
- 
+
             abnormal_exit = False
             self.last_traceback = ''
             try:
@@ -388,15 +400,12 @@ class ScriptRunner:
                 sys.stdout = self.stdout
                 if self.clear_console:
                     self.stdout.setPlainText('')
-                    #self.log_file.write("Running script %s in %s\n" % (script_name, script_dir))
-                print "----------%s----------\nRunning %s in: %s" % (datetime.datetime.now(), script_name, script_dir)
-                
-                
+                print "----------%s----------" % datetime.datetime.now()
+                print "Running %s in: %s" % (script_name, script_dir)
+
                 user_script.run_script(self.iface)
             except:
                 # show traceback
-                #(etype, value, traceback) = sys.exc_info()
-                #QMessageBox.information(None, "Traceback", str(dir(traceback)))
                 tb = TracebackDialog()
                 tb.ui.teTraceback.setTextColor(QColor(Qt.red))
                 self.last_traceback = traceback.format_exc()
@@ -404,38 +413,16 @@ class ScriptRunner:
                 tb.show()
                 tb.exec_()
                 abnormal_exit = True
-                print "\n%s\nAbnormal termination" % self.last_traceback 
+                print "\n%s\nAbnormal termination" % self.last_traceback
                 #QMessageBox.information(None, "Error", traceback.format_exc())
             finally:
                 print "Completed script: %s" % script_name
                 sys.stdout = self.old_stdout
                 if self.log_output:
                     self.log_file.flush()
-                
-            #output = sys.stdout.get_and_clean_data()
 
-#            if self.log_output:
-#                log_text = "Running script %s in %s\n%s" % (script_name, script_dir, output)
-#                if self.last_traceback != '':
-#                    log_text += "\n%s\nAbnormal termination" % (self.last_traceback) 
-#                self.log_results(script_dir, script_name, log_text)
-#
-#            # display output in console
-#            if self.display_in_console:
-#                if self.clear_console:
-#                    self.console.edit.clearConsole()
-#                self.console.edit.insertTaggedText("\nRunning script: %s" % script_name, 1)
-#                if output:
-#                    #QMessageBox.information(None, "Script Output", output)
-#                    self.console.setVisible(True)
-#                    self.console.edit.insertTaggedText("SCRIPTRUNNER:\n%s" % output, 3)
-#                    if abnormal_exit:
-#                        self.console.edit.insertTaggedText("Abnormal termination", 1)
-#                    self.console.edit.insertTaggedText("Completed script: %s" % script_name, 1)
-#                    self.console.edit.displayPrompt()
-#                    self.console.edit.ensureCursorVisible()
-#
-            self.main_window.statusbar.showMessage("Completed script: %s" % script_name)
+            self.main_window.statusbar.showMessage(
+                "Completed script: %s" % script_name)
 
     def run(self):
         """
@@ -462,13 +449,13 @@ class ScriptRunner:
         if self.auto_display:
             self.info()
 
-
     def update_settings(self):
         """
         Update the setting for the plugin---at present just
         the list of scripts.
         """
-        self.settings.setValue("ScriptRunner/scripts", QVariant(self.list_of_scripts))
+        self.settings.setValue("ScriptRunner/scripts",
+                               QVariant(self.list_of_scripts))
 
     def sweep_console(self):
         self.stdout_textedit.setPlainText('')
@@ -479,18 +466,24 @@ class ScriptRunner:
         if prefs_dlg.exec_() == QDialog.Accepted:
             self.fetch_settings()
             self.configure_console()
-      
-    def fetch_settings(self):
-        self.auto_display = self.settings.value("ScriptRunner/auto_display", True).toBool()
-        self.clear_console = self.settings.value("ScriptRunner/clear_console", True).toBool()
-        self.show_console = self.settings.value("ScriptRunner/show_console", True).toBool()
-        self.log_output = self.settings.value("ScriptRunner/log_output_to_disk", False).toBool()
-        self.log_dir = self.settings.value("ScriptRunner/log_directory", "/tmp").toString()
-        self.log_overwrite = self.settings.value("ScriptRunner/log_overwrite", False).toBool()
-        self.use_custom_editor = self.settings.value("ScriptRunner/use_custom_editor", False).toBool()
-        self.custom_editor = str(self.settings.value("ScriptRunner/custom_editor", "").toString())
 
-        #self.custom_editor = "/Applications/Sublime Text 2.app/Contents/MacOS/Sublime Text 2"
+    def fetch_settings(self):
+        self.auto_display = self.settings.value(
+            "ScriptRunner/auto_display", True).toBool()
+        self.clear_console = self.settings.value(
+            "ScriptRunner/clear_console", True).toBool()
+        self.show_console = self.settings.value(
+            "ScriptRunner/show_console", True).toBool()
+        self.log_output = self.settings.value(
+            "ScriptRunner/log_output_to_disk", False).toBool()
+        self.log_dir = self.settings.value(
+            "ScriptRunner/log_directory", "/tmp").toString()
+        self.log_overwrite = self.settings.value(
+            "ScriptRunner/log_overwrite", False).toBool()
+        self.use_custom_editor = self.settings.value(
+            "ScriptRunner/use_custom_editor", False).toBool()
+        self.custom_editor = str(
+            self.settings.value("ScriptRunner/custom_editor", "").toString())
 
     def configure_console(self):
         self.stdout = self.stdout_textedit
@@ -500,14 +493,6 @@ class ScriptRunner:
         # set the visibility of the console based on user preference
         self.stdout_dock.setVisible(self.show_console)
 
-#        if self.display_in_console:
-#            if (console._console is None):
-#                console._console = console.PythonConsole(iface.mainWindow())
-#            #console.show_console()
-#        
-#
-#            self.console = console._console
-
     def log_results(self, script_dir, script_name, output):
         # open the logfile using mode based on user preference
         if self.log_overwrite:
@@ -515,10 +500,9 @@ class ScriptRunner:
         else:
             mode = 'a'
 
-        log_file = open(os.path.join(str(self.log_dir), "%s.log" % script_name), mode)
-        #log_file.write("\n---------- Script Runner %s ----------\n%s" % (datetime.datetime.now(), output))
+        log_file = open(os.path.join(str(self.log_dir),
+                                     "%s.log" % script_name), mode)
         log_file.close()
-
 
     def show_context_menu(self, pos):
         #self.context_menu.popup(point)
@@ -536,7 +520,7 @@ class ScriptRunner:
 
     def edit_script(self):
         item = self.scriptList.currentItem()
-        if item != None:
+        if item is not None:
             script = item.toolTip()
             if self.use_custom_editor:
                 try:
@@ -547,9 +531,14 @@ class ScriptRunner:
                         subprocess.Popen(['open', '-a', app, script])
                     else:
                         # use subprocess to call custom editor
-                        subprocess.Popen([str(self.custom_editor), str(script)])
+                        subprocess.Popen([str(self.custom_editor),
+                                          str(script)])
                 except:
-                    QMessageBox.critical(None, "Error Opening Editor", "Atempting to open %s using %s failed.\nCheck the path to your custom editor."% (script, self.custom_editor))
+                    QMessageBox.critical(
+                        None, "Error Opening Editor",
+                        """Atempting to open %s using %s failed.\n
+                        Check the path to your custom editor."""
+                        % (script, self.custom_editor))
                     tb = TracebackDialog()
                     tb.ui.teTraceback.setTextColor(QColor(Qt.red))
                     self.last_traceback = traceback.format_exc()
@@ -575,6 +564,5 @@ class ScriptRunner:
                 sys.__stdout__.flush()
 
     def restore_window_position(self):
-        self.mw.restoreGeometry(self.settings.value("ScriptRunner/geometry").toByteArray())
-        #self.mw.restoreState(self.settings.value("ScriptRunner/window_state").toByteArray())
-
+        self.mw.restoreGeometry(
+            self.settings.value("ScriptRunner/geometry").toByteArray())
