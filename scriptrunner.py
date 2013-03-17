@@ -549,7 +549,7 @@ class ScriptRunner:
                             subprocess.Popen(['open', '-a', app, script])
                     else:
                         # use subprocess to call custom editor
-                        subprocess.Popen([self.custom_editor, script])
+                        subprocess.Popen([str(self.custom_editor), script])
                 except:
                     QMessageBox.critical(None, "Error Opening Editor", "Atempting to open %s using %s failed.\nCheck the path to your custom editor."% (script, self.custom_editor))
                     tb = TracebackDialog()
