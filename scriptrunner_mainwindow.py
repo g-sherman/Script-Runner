@@ -8,15 +8,16 @@ Copyright: (C) 2012 by GeoApt LLC
 Email: gsherman@geoapt.com
 
 
-This program is free software; you can redistribute it and/or modify  
-it under the terms of the GNU General Public License as published by  
-the Free Software Foundation; either version 2 of the License, or     
-(at your option) any later version.                                   
-                                                                          
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
 """
 
 from PyQt4 import QtCore, QtGui
 from mainwindow import Ui_MainWindow
+
 
 class ScriptRunnerMainWindow(QtGui.QMainWindow):
     """
@@ -36,5 +37,6 @@ class ScriptRunnerMainWindow(QtGui.QMainWindow):
         self.settings.setValue("ScriptRunner/geometry", self.saveGeometry())
         #settings.setValue("ScriptRunner/window_state", self.saveState())
         #self.closeEvent(event)
+
     def moveEvent(self, event):
         self.settings.setValue("ScriptRunner/geometry", self.saveGeometry())
