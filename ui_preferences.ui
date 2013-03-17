@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>532</width>
-    <height>293</height>
+    <width>528</width>
+    <height>354</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,9 +33,57 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="cbCustomEditor">
+        <property name="toolTip">
+         <string>Application to use for editing scripts. If not specified, the system default will be used.</string>
+        </property>
+        <property name="text">
+         <string>Edit scripts using:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="leCustomEditorPath">
+          <property name="minimumSize">
+           <size>
+            <width>400</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Full path to your editor application</string>
+          </property>
+          <property name="placeholderText">
+           <string>Full path to your edtior</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="tbSetEditorPath">
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
-     <zorder>cbAutoDisplay</zorder>
-     <zorder>groupBoxOutput</zorder>
     </widget>
    </item>
    <item row="1" column="0">
@@ -43,7 +91,7 @@
      <property name="title">
       <string>Output and Logging</string>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -112,7 +160,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>8</x>
@@ -145,11 +193,8 @@
        </item>
       </layout>
      </widget>
-     <zorder>cbClearConsole</zorder>
-     <zorder>cbLogToDisk</zorder>
-     <zorder></zorder>
-     <zorder>groupBox</zorder>
-     <zorder>cbShowConsole</zorder>
+     <zorder>layoutWidget</zorder>
+     <zorder>layoutWidget</zorder>
     </widget>
    </item>
    <item row="2" column="0">

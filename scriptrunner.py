@@ -16,6 +16,8 @@ the Free Software Foundation; either version 2 of the License, or
 import sys
 import traceback
 import os
+import platform
+import subprocess
 import re
 import inspect
 import datetime
@@ -485,6 +487,10 @@ class ScriptRunner:
         self.log_output = self.settings.value("ScriptRunner/log_output_to_disk", False).toBool()
         self.log_dir = self.settings.value("ScriptRunner/log_directory", "/tmp").toString()
         self.log_overwrite = self.settings.value("ScriptRunner/log_overwrite", False).toBool()
+        self.use_custom_editor = self.settings.value("ScriptRunner/use_custom_editor", False).toBool()
+        self.custom_editor = str(self.settings.value("ScriptRunner/custom_editor", "").toString())
+
+        #self.custom_editor = "/Applications/Sublime Text 2.app/Contents/MacOS/Sublime Text 2"
 
     def configure_console(self):
         self.stdout = self.stdout_textedit
@@ -532,8 +538,23 @@ class ScriptRunner:
         item = self.scriptList.currentItem()
         if item != None:
             script = item.toolTip()
-            # get the path and add it to sys.path
-            QDesktopServices.openUrl(QUrl("file://%s" % script))
+            if self.use_custom_editor:
+                try:
+                    if platform.system() == 'Darwin':
+                        (path, app) = os.path.split(self.custom_editor)
+                        (base_name, ext) = os.path.splitext(app)
+                        if ext == '.app':
+                            QMessageBox.information(None, 'Open', "Opening with open -a")
+                            # open it using open -a syntax
+                            subprocess.Popen(['open', '-a', app, script])
+                    else:
+                        # use subprocess to call custom editor
+                        subprocess.Popen([self.custom_editor, script])
+                except:
+                    QMessageBox.critical(None, "Error Opening Editor", "Atempting to open %s using %s failed.\nCheck the path to your custom editor."% (script, self.custom_editor))
+            else:
+                # Open the script with the system default
+                QDesktopServices.openUrl(QUrl("file://%s" % script))
 
     def close_window(self):
         self.mw.hide()

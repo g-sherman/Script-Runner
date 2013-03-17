@@ -36,6 +36,8 @@ class PreferencesDialog(QtGui.QDialog):
         self.ui.buttonBox.accepted.connect(self.save_settings)
         # connect the set log directory button
         self.ui.tbSetLogDirectory.clicked.connect(self.set_log_dir)
+        # connect the set custom editor path button
+        self.ui.tbSetEditorPath.clicked.connect(self.editor_path)
 
         # connect the checkbox state change
         self.ui.cbLogToDisk.stateChanged.connect(self.changed_log_to_disk)
@@ -53,22 +55,33 @@ class PreferencesDialog(QtGui.QDialog):
         log_output = self.settings.value("ScriptRunner/log_output_to_disk", False)
         self.ui.cbLogToDisk.setChecked(log_output.toBool())
 
-        log_dir = self.settings.value("ScriptRunner/log_directory", "/tmp")
+        log_dir = self.settings.value("ScriptRunner/log_directory", "")
         self.ui.leLogDirectory.setText(log_dir.toString())
 
         log_overwite = self.settings.value("ScriptRunner/log_overwrite", False)
         self.ui.cbOverwriteLogFile.setChecked(log_overwite.toBool())
 
+        use_custom_editor = self.settings.value("ScriptRunner/use_custom_editor", False)
+        self.ui.cbCustomEditor.setChecked(use_custom_editor.toBool())
+
+        custom_editor = self.settings.value("ScriptRunner/custom_editor", "")
+        self.ui.leCustomEditorPath.setText(custom_editor.toString())
+
         # disable controls based on parent settings
         self.changed_log_to_disk(self.ui.cbLogToDisk.checkState())
 
  
-
     def set_log_dir(self):
         self.log_dir = QtGui.QFileDialog.getExistingDirectory(None, "Select the Directory for your Script Runner Logs", ".")
         if self.log_dir != '':
             # store the log_dir in settings
             self.ui.leLogDirectory.setText(self.log_dir)
+
+    def editor_path(self):
+        self.editor_path = QtGui.QFileDialog.getOpenFileName(None, "Select the Application for Editing Scripts", ".")
+        if self.editor_path != '':
+            # store the log_dir in settings
+            self.ui.leCustomEditorPath.setText(self.editor_path)
 
     def changed_log_to_disk(self, state):
          self.ui.leLogDirectory.setEnabled(state == Qt.Checked)
@@ -83,3 +96,5 @@ class PreferencesDialog(QtGui.QDialog):
         self.settings.setValue("ScriptRunner/log_output_to_disk", self.ui.cbLogToDisk.checkState() == Qt.Checked)
         self.settings.setValue("ScriptRunner/log_directory", self.ui.leLogDirectory.text())
         self.settings.setValue("ScriptRunner/log_overwrite", self.ui.cbOverwriteLogFile.checkState() == Qt.Checked)
+        self.settings.setValue("ScriptRunner/use_custom_editor", self.ui.cbCustomEditor.checkState() == Qt.Checked)
+        self.settings.setValue("ScriptRunner/custom_editor", self.ui.leCustomEditorPath.text())
