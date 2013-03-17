@@ -14,6 +14,7 @@ the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.                                   
                                                                           
 """
+import sys
 
 #from PyQt4 import QtCore, QtGui
 #from PyQt4.QtCore import Qt, pyqtSignal, QString
@@ -46,5 +47,6 @@ class StdoutTextEdit(QTextEdit):
         self.insertPlainText(text)
         self.ensureCursorVisible()
         QCoreApplication.processEvents()
+        sys.__stdout__.flush()
         self.new_output.emit(str(text))
 

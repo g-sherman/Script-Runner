@@ -19,9 +19,10 @@
 
 # Makefile for a PyQGIS plugin 
 
+WORKDIR = work_dir
 PLUGINNAME = scriptrunner
 
-PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py preferences_dialog.py traceback_dialog.py scriptrunner_help.py stdout_textwidget.py
+PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py preferences_dialog.py traceback_dialog.py scriptrunner_help.py stdout_textwidget.py syntax.py
 
 EXTRAS = icon.png 
 
@@ -49,6 +50,16 @@ deploy: compile
 	cp -vf $(RESOURCE_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 
+zipfile: compile
+	mkdir -p $(WORKDIR)/$(PLUGINNAME)
+	cp -vf $(PY_FILES) $(WORKDIR)/$(PLUGINNAME)
+	cp -vf $(UI_FILES) $(WORKDIR)/$(PLUGINNAME)
+	cp -vf $(RESOURCE_FILES) $(WORKDIR)/$(PLUGINNAME)
+	cp -vf $(EXTRAS) $(WORKDIR)/$(PLUGINNAME)
+	cd $(WORKDIR);zip -9vr $(PLUGINNAME).zip $(PLUGINNAME)
+
+dist: zipfile
+	scp $(WORKDIR)/$(PLUGINNAME).zip geoapt.net:/var/vhosts/geoapt/qgis_plugins
 # Create a zip package of the plugin named $(PLUGINNAME).zip. 
 # This requires use of git (your plugin development directory must be a 
 # git repository).

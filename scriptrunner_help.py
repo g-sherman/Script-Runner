@@ -128,8 +128,8 @@ def htmlabout():
        <li>Preferences dialog allows control of output and logging options</li>
        <li>Exceptions in scripts are displayed without interfering with console/logging output</li>
        <li>Context menu (right-click) to access script functions</li>
-
-
+       <li>Edit script function uses system default editor or one you specify in preferences</li>
+       <li>
        </ul>
        <li>0.5</li>
        <ul>

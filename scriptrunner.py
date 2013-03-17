@@ -540,16 +540,14 @@ class ScriptRunner:
             script = item.toolTip()
             if self.use_custom_editor:
                 try:
-                    if platform.system() == 'Darwin':
-                        (path, app) = os.path.split(self.custom_editor)
-                        (base_name, ext) = os.path.splitext(app)
-                        if ext == '.app':
-                            QMessageBox.information(None, 'Open', "Opening with open -a")
-                            # open it using open -a syntax
-                            subprocess.Popen(['open', '-a', app, script])
+                    (path, app) = os.path.split(self.custom_editor)
+                    (base_name, ext) = os.path.splitext(app)
+                    if ext == '.app' and platform.system() == 'Darwin':
+                        # open it using open -a syntax
+                        subprocess.Popen(['open', '-a', app, script])
                     else:
                         # use subprocess to call custom editor
-                        subprocess.Popen([str(self.custom_editor), script])
+                        subprocess.Popen([str(self.custom_editor), str(script)])
                 except:
                     QMessageBox.critical(None, "Error Opening Editor", "Atempting to open %s using %s failed.\nCheck the path to your custom editor."% (script, self.custom_editor))
                     tb = TracebackDialog()
