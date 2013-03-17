@@ -552,6 +552,12 @@ class ScriptRunner:
                         subprocess.Popen([self.custom_editor, script])
                 except:
                     QMessageBox.critical(None, "Error Opening Editor", "Atempting to open %s using %s failed.\nCheck the path to your custom editor."% (script, self.custom_editor))
+                    tb = TracebackDialog()
+                    tb.ui.teTraceback.setTextColor(QColor(Qt.red))
+                    self.last_traceback = traceback.format_exc()
+                    tb.ui.teTraceback.setText(traceback.format_exc())
+                    tb.show()
+                    tb.exec_()
             else:
                 # Open the script with the system default
                 QDesktopServices.openUrl(QUrl("file://%s" % script))
