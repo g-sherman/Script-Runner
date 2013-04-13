@@ -21,6 +21,8 @@ def htmlhelp():
     <a href="#design">Design Options</a><br>
     <a href="#requirements">Requirements for Your Script</a><br>
     <a href="#working_with_scripts">Working with Scripts</a><br>
+    <a href="#editing_a_script">Editing a Script</a><br>
+    <a href="#passing_arguments">Passing Arguments</a></br>
     </p>
     <a name="design"/>
     <p>
@@ -90,6 +92,54 @@ def htmlhelp():
    think it will.
    </p>
 
+   <a name="editing_a_script"/>
+   <h4>Editing a Script</h4>
+   <p>
+   The context menu (right-click on a script) has an <em>Edit script in external
+   editor</em> option---this will open the script in the default system
+   editor used for Python source files. If you wish to use a different editor,
+   you can enter the full path to the editor on the Preferences dialog.
+   </p>
+   <p>
+   This feature allows you to quickly make edits to your script during
+   development. Once edited, be sure to click the *Reload* button to pull in
+   the new version. You can leave the script open in your editor during the
+   edit->reload->run cycle.
+   </p>
+
+   <a name="passing_arguments"/>
+   <h4>Passing Arguments</h4>
+   <p>
+   You can pass one or more arguments to your script. Your <em>run_script</em>
+   function must include an argument preceded by <tt>**</tt>:
+   </p>
+   <pre>
+    def run_script(iface, **args):
+    </pre>
+   <p>
+   To run the script, click the <em>Run script with arguments</em> button  and
+   enter the arguments in the form: key=value.
+   </p>
+   <p>
+   For example, if your script needs the path to a raster, you would enter the
+   argument as:
+   <pre>
+   path='/data/myraster.tif'
+   </pre>
+   <p>
+   In your <em>run_script</em> function you then access the path using:
+   </p>
+   <pre>
+   args['path']
+   </pre>
+   <p>
+   Arguments can be either numeric or string. Arguments are separated by commas
+   and all strings must be quoted. For example:
+   <pre>
+   buffer_size=100, path='/data/myvectors.shp'
+   </pre>
+
+
     </body>
     </html>"""
 
@@ -100,7 +150,7 @@ def htmlabout():
     """
     return """<html>
     <body>
-    <h3>Script Runner - Version 0.6</h3>
+    <h3>Script Runner - Version 0.7</h3>
     <p>
     Script Runner lets you run Python scripts in QGIS to automate and perform
     repetitive tasks.
@@ -134,6 +184,16 @@ def htmlabout():
    </ul>
        <h4>Changelog</h4>
        <ul>
+       <li>0.7</li>
+       <ul>
+       <li>For named arguments, prompt by name</li>
+       <li>Only one run button to run scripts with/without arguments</li>
+       <li>Moved help from tab to button that opens Sphinx doc in browser</li>
+       <li>Fixed bug that prevented syntax highlighting from working when
+       reloading a script</li>
+       </ul>
+       </ul>
+       <ul>
        <li>0.6</li>
        <ul>
        <li>Script output is logged to the Script Runner window<li>
@@ -145,6 +205,7 @@ def htmlabout():
        <li>Edit script function uses system default editor or one you specify
        in preferences</li>
        <li>
+       <li>Arguments can be passed to a script using keyword arguments</li>
        </ul>
        <li>0.5</li>
        <ul>

@@ -10,9 +10,11 @@
 
 [general]
 name=ScriptRunner
-qgisMinimumVersion=1.7
+qgisMinimumVersion=1.8
 description=Run scripts to automate QGIS tasks
-version=0.6
+version=0.7
+author=GeoApt LLC
+email=gsherman@geoapt.com
 
 # end of mandatory metadata
 
@@ -34,6 +36,3 @@ experimental=False
 # deprecated flag (applies to the whole plugin, not just a single version
 deprecated=False
 
-# Author contact information
-author=GeoApt LLC
-email=gsherman@geoapt.com

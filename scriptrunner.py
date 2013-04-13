@@ -21,6 +21,8 @@ import subprocess
 import re
 import inspect
 import datetime
+if platform.system() == 'Windows':
+    import win32api
 
 # Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
@@ -42,6 +44,8 @@ from stdout_textwidget import StdoutTextEdit
 from scriptrunner_help import *
 #from highlighter import *
 from syntax import *
+# ars dialog
+from argsdialog import ArgsDialog
 
 # for remote pydev debug (remove prior to production)
 #import debug_settings
@@ -72,6 +76,13 @@ class ScriptRunner:
 
             self.log_file = open(os.path.join(str(self.log_dir),
                                               "scriptrunner.log"), mode)
+        self.last_args = ''
+
+        self.plugin_dir = QFileInfo(
+            QgsApplication.qgisUserDbFilePath()).path() + \
+            "/python/plugins/scriptrunner"
+
+
 
     def initGui(self):
         """
@@ -80,7 +91,7 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
-        self.mw.setWindowTitle("Script Runner Version 0.6")
+        self.mw.setWindowTitle("Script Runner Version 0.7")
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
         stored_scripts = self.settings.value("ScriptRunner/scripts")
@@ -99,7 +110,9 @@ class ScriptRunner:
         self.main_window = self.mw.ui
 
         self.toolbar = self.main_window.toolBar
-        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.toolbar.setIconSize(QSize(30,30))
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        #self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
         ## Action setup
         # action for adding a script
@@ -112,7 +125,13 @@ class ScriptRunner:
         self.run_action = QAction(QIcon(":plugins/scriptrunner/run_icon"),
                                   "Run Script", self.mw)
         self.toolbar.addAction(self.run_action)
-        self.run_action.triggered.connect(self.run_script)
+        self.run_action.triggered.connect(self.dispatch_script)
+
+        # action for running a script with arguments
+        #self.run_with_args_action = QAction(QIcon(":plugins/scriptrunner/run_args_icon"),
+        #                                    "Run script with arguments", self.mw)
+        #self.toolbar.addAction(self.run_with_args_action)
+        #self.run_with_args_action.triggered.connect(self.run_with_args)
 
         # action for getting info about a script
         self.info_action = QAction(QIcon(":plugins/scriptrunner/info_icon"),
@@ -146,6 +165,12 @@ class ScriptRunner:
         self.toolbar.addAction(self.prefs_action)
         self.prefs_action.triggered.connect(self.set_preferences)
 
+        # action for opening help
+        self.help_action = QAction(QIcon(":plugins/scriptrunner/help_icon"),
+                                    "Help", self.mw)
+        self.toolbar.addAction(self.help_action)
+        self.help_action.triggered.connect(self.open_help)
+
         # action for closing ScriptRunner
         self.exit_action = QAction(QIcon(":plugins/scriptrunner/exit_icon"),
                                    "Close", self.mw)
@@ -169,7 +194,7 @@ class ScriptRunner:
 
         self.scriptList = QListWidget()
         # connect double click to info slot
-        self.scriptList.itemDoubleClicked.connect(self.item_info)
+        #self.scriptList.itemDoubleClicked.connect(self.item_info)
         self.scriptList.currentItemChanged.connect(self.current_script_changed)
         self.scriptList.customContextMenuRequested.connect(
             self.show_context_menu)
@@ -177,6 +202,7 @@ class ScriptRunner:
         ## Context menu for the scriptList
         self.context_menu = QMenu(self.scriptList)
         self.context_menu.addAction(self.run_action)
+        #self.context_menu.addAction(self.run_with_args_action)
         self.context_menu.addAction(self.remove_action)
         self.context_menu.addAction(self.reload_action)
         self.context_menu.addAction(self.edit_action)
@@ -195,9 +221,12 @@ class ScriptRunner:
         self.tabWidget.addTab(self.textBrowserSource, "Source")
         highlighter = PythonHighlighter(self.textBrowserSource.document())
 
-        self.textBrowserHelp = QTextBrowser()
-        self.textBrowserHelp.setHtml(htmlhelp())
-        self.tabWidget.addTab(self.textBrowserHelp, "Help")
+        #self.textBrowserHelp = QTextBrowser()
+        #self.textBrowserHelp.setSearchPaths(["%s/doc" % self.plugin_dir])
+        #help_url = QUrl("file:///%s/doc/index.html" % self.plugin_dir)
+        #self.textBrowserHelp.setSource(help_url)
+        ##self.textBrowserHelp.setHtml(htmlhelp())
+        #self.tabWidget.addTab(self.textBrowserHelp, "Help")
 
         self.textBrowserAbout = QTextBrowser()
         self.textBrowserAbout.setHtml(htmlabout())
@@ -230,10 +259,19 @@ class ScriptRunner:
         else:
             # add the list of scripts fetched from settings
             for script in self.list_of_scripts:
-                (script_dir, script_name) = os.path.split(
-                    str(script.toString()))
-                item = QListWidgetItem(script_name, self.scriptList)
-                item.setToolTip(script.toString())
+                full_path = str(script.toString())
+                (script_dir, script_name) = os.path.split(full_path)
+                (has_run_method, uses_args) = self.have_run_method(full_path)
+                if has_run_method:
+                    if uses_args:
+                        script_name += '**'
+                    item = QListWidgetItem(script_name, self.scriptList)
+                    item.setToolTip(script.toString())
+                else:
+                    self.stdout_textedit.write(
+                        "!!Script %s is missing the run_script method---not loaded!!\n" % full_path)
+            self.stdout_textedit.ensureCursorVisible()
+
         self.scriptList.setCurrentRow(0)
 
     def unload(self):
@@ -251,8 +289,11 @@ class ScriptRunner:
                                              "", "Python scripts (*.py)")
         if script:
             # check to see if we have a run method without importing the script
-            if self.have_run_method(script):
+            run_method_check = self.have_run_method(script)
+            if run_method_check[0]:  #self.have_run_method(script):
                 (script_dir, script_name) = os.path.split(str(script))
+                if run_method_check[1]:
+                    script_name += '**'
                 item = QListWidgetItem(script_name, self.scriptList)
                 item.setToolTip(script)
                 self.main_window.statusbar.showMessage(
@@ -263,7 +304,7 @@ class ScriptRunner:
             else:
                 QMessageBox.information(
                     None, "Error",
-                    """Your script must have a run_script() function defined.
+                    """Your script must have a run_script() function defined.\n
                     Adding the script failed.""")
                 self.main_window.statusbar.showMessage(
                     "Failed to add: %s - no run_script function" % script)
@@ -297,23 +338,36 @@ class ScriptRunner:
                 reload(sys.modules[user_module])
                 self.main_window.statusbar.showMessage(
                     "Reloaded script: %s" % script)
-                self.info()
+                (has_run_method, uses_args) = self.have_run_method(script)
+                if has_run_method:
+                    # set state of the run with args button
+                    #self.run_with_args_action.setEnabled(uses_args)
+                    if uses_args:
+                        # has keyword args: add ** to the name
+                        item.setText("%s**" % script_name)
+                    else:
+                        item.setText(script_name)
+                    self.info()
+                else:
+                    QMessageBox.warning(
+                        None, "Missing run_script",
+                        "Your script is now missing the required run_script method")
+
             else:
                 QMessageBox.information(
                     None, "Reload",
-                    """The %s script was not reloaded since it hasn't
+                    """The %s script was not reloaded since it hasn't\n
                     been imported yet""" % user_module)
 
-    def item_info(self, item):
-        self.info(item)
+    #def item_info(self, item):
+    #    self.info(item)
 
-    def info(self, item=None):
+    def info(self):
         """
         Display information about the script, including the docstring,
         classes, methods, and functions.
         """
-        if item is None:
-            item = self.scriptList.currentItem()
+        item = self.scriptList.currentItem()
         if item is not None:  # in case no currentitem and none was passed
             script = item.toolTip()
             (script_dir, script_name) = os.path.split(str(script))
@@ -333,8 +387,9 @@ class ScriptRunner:
             html = "<h4>%s</h4><h4>Doc String:</h4>%s" % (script, doc_string)
 
             # populate the source tab
-            source_code = "<pre>%s</pre>" % self.get_source(script)
-            self.textBrowserSource.setHtml(source_code)
+            highlighter = PythonHighlighter(self.textBrowserSource.document())
+            self.textBrowserSource.setPlainText(self.get_source(script))
+            #self.textBrowserSource.setHtml(self.get_source(script))
 
             classes = inspect.getmembers(
                 sys.modules[user_module], inspect.isclass)
@@ -371,7 +426,55 @@ class ScriptRunner:
         src.close()
         return source
 
-    def run_script(self):
+    def dispatch_script(self):
+        item = self.scriptList.currentItem()
+        if item is not None:
+            script = str(item.text())
+            if script[-2:] == '**':
+                self.run_with_args()
+            else:
+                self.run_script(None)
+
+
+
+
+    def run_with_args(self):
+        # get the args
+        script_args = self.get_script_args()
+        print "script args:"
+        print script_args
+
+        if script_args is not None:
+            args_dlg = ArgsDialog(self.get_script_args(), self.script_name())
+            args = args_dlg.show_dialog()
+            if args is not None:
+                self.run_script(args)
+        else:
+            args = None
+            QMessageBox.information(
+                    None,
+                    "No Arguments",
+                    """Your script accepts no arguments. Use the Run Script button to run it.""")
+
+        #user_args = QInputDialog.getText(
+        #    self.mw, "Script Arguments", 
+        #    """Arguments must be specified as key=value pairs with all string values quoted:""",
+        #    QLineEdit.Normal, self.last_args)
+        #if len(user_args[0]) > 0 and user_args[1]:
+        #    self.last_args = user_args[0]
+        #    # convert input to a dict
+        #    args_list = "dict(%s)" % user_args[0]
+        #try:
+            #args = eval(args_list)
+        #    self.run_script(args)
+        #except:
+        #    QMessageBox.warning(
+        #        None,
+        #        "Error in arguments",
+        #        """There is an error in your argument list. Arguments must be specified as key=value pairs with all string values quoted.""")
+
+
+    def run_script(self, user_args):
         """
         Run the currently selected script.
         """
@@ -402,8 +505,30 @@ class ScriptRunner:
                     self.stdout.setPlainText('')
                 print "----------%s----------" % datetime.datetime.now()
                 print "Running %s in: %s" % (script_name, script_dir)
+                print user_args  # for debug
+                print type(user_args)
+                if type(user_args) is not dict:
+                    user_args = {}
+                    user_script.run_script(self.iface)  #, **user_args)
+                else:
+                    func = "user_script.run_script(self.iface, "
+                    #func += ",' ".join(user_args['args'])
+                    for ar in user_args['args']:
+                        func += "%s, " % ar
+                    func = func[:-2]
+                    if user_args['keywords'] != None:
+                        kwlist = "dict(%s)" % user_args['keywords']
+                        kwargs = eval(kwlist)
+                        func += ", **kwargs)"
+                    else:
+                        func += ")"
+                    print "func is %s" % func
+                    exec(func)
 
-                user_script.run_script(self.iface)
+            #except NameError as ne:
+            #    tb = TracebackDialog()
+            #    tb.ui.teTraceback.setText("""There was an argument error. Did you
+            #            forget to quote a string argument?\n%s""" % ne.message)
             except:
                 # show traceback
                 tb = TracebackDialog()
@@ -438,14 +563,25 @@ class ScriptRunner:
         script = open(script_path, 'r')
         pattern = re.compile('\s*def run_script\(*')
         run_method = False
+        uses_args = False
         for line in script:
             if pattern.search(line):
                 run_method = True
-                break
+                # check to see if this script uses keyword args
+                parts = line.split(',')
+                if len(parts) > 1:
+                    #uses_args =  line.find('**') != -1
+                    uses_args = True
+                    break
         script.close()
-        return run_method
+        return run_method, uses_args
 
     def current_script_changed(self):
+        # check to see if it uses args
+        item = self.scriptList.currentItem()
+        label = str(item.text())
+        #self.run_with_args_action.setEnabled(label[-2:] == "**")
+
         if self.auto_display:
             self.info()
 
@@ -530,6 +666,11 @@ class ScriptRunner:
                         # open it using open -a syntax
                         subprocess.Popen(['open', '-a', app, script])
                     else:
+                        if platform.system() == 'Windows':
+                            # use the short name 
+                            editor = win32api.GetShortPathName(str(self.custom_editor))
+                        else:
+                            editor = str(self.custom_editor)
                         # use subprocess to call custom editor
                         subprocess.Popen([str(self.custom_editor),
                                           str(script)])
@@ -552,6 +693,38 @@ class ScriptRunner:
     def close_window(self):
         self.mw.hide()
 
+    def get_script_args(self):
+        """
+        Get the args for the scripts run_script function
+        """
+        item = self.scriptList.currentItem()
+        if item is not None:  # in case no currentitem and none was passed
+            script = item.toolTip()
+            (script_dir, script_name) = os.path.split(str(script))
+            (user_module, ext) = os.path.splitext(script_name)
+            if script_dir not in sys.path:
+                sys.path.append(script_dir)
+            if not user_module in sys.modules:
+                __import__(user_module)
+            script_args = inspect.getargspec(sys.modules[user_module].run_script)
+            #print "script_args is ", script_args
+
+            # check to see if we have args in addition to 'iface'
+            if len(script_args.args) > 1 or script_args.keywords != None:
+                return script_args
+            else:
+                return None
+
+    def script_name(self):
+        """Return the script name."""
+        item = self.scriptList.currentItem()
+        if item is not None:
+            script = item.toolTip()
+            (script_dir, script_name) = os.path.split(str(script))
+            return script_name
+        else:
+            return None
+
     #@pyqtSlot(str)
     def output_posted(self, text):
         #QMessageBox.information(None, "New Stdout", text)
@@ -566,3 +739,7 @@ class ScriptRunner:
     def restore_window_position(self):
         self.mw.restoreGeometry(
             self.settings.value("ScriptRunner/geometry").toByteArray())
+
+    def open_help(self):
+        help_url = QUrl("file:///%s/help/index.html" % self.plugin_dir)
+        QDesktopServices.openUrl(help_url)

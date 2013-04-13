@@ -34,7 +34,7 @@ def version():
     """
     Return the version of the plugin.
     """
-    return "Version 0.6"
+    return "Version 0.7"
 
 
 def icon():
@@ -48,8 +48,13 @@ def qgisMinimumVersion():
     """
     Return the minimum version of QGIS needed to use this plugin.
     """
-    return "1.7"
+    return "1.8"
 
+def author():
+    return "gsherman"
+
+def email():
+    return "gsherman@geoapt.com"
 
 def classFactory(iface):
     """

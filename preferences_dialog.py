@@ -54,7 +54,7 @@ class PreferencesDialog(QtGui.QDialog):
             "ScriptRunner/show_console", True)
         self.ui.cbShowConsole.setChecked(show_console.toBool())
         clear_console = self.settings.value(
-            "ScriptRunner/clear_console", True)
+            "ScriptRunner/clear_console", False)
         self.ui.cbClearConsole.setChecked(clear_console.toBool())
         log_output = self.settings.value(
             "ScriptRunner/log_output_to_disk", False)

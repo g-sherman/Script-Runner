@@ -6,10 +6,12 @@
         <file alias="info_icon">resources/info.png</file>
         <file alias="reload_icon">resources/reload.png</file>
         <file alias="run_icon">resources/run.png</file>
+        <file alias="run_args_icon">resources/run_args.png</file>
         <file alias="prefs_icon">resources/prefs.png</file>
         <file alias="clear_icon">resources/clear.png</file>
         <file alias="edit_icon">resources/edit.png</file>
         <file alias="exit_icon">resources/exit.png</file>
         <file alias="toggle_icon">resources/toggle_console.png</file>
+        <file alias="help_icon">resources/help.png</file>
     </qresource>
 </RCC>

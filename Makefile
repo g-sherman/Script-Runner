@@ -19,16 +19,19 @@
 
 # Makefile for a PyQGIS plugin 
 
+DOTQGIS = .qgis2
 WORKDIR = work_dir
 PLUGINNAME = scriptrunner
 
-PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py preferences_dialog.py traceback_dialog.py scriptrunner_help.py stdout_textwidget.py syntax.py
+PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py preferences_dialog.py traceback_dialog.py scriptrunner_help.py stdout_textwidget.py syntax.py argsdialog.py
 
-EXTRAS = icon.png 
+EXTRAS = icon.png metadata.txt
 
 UI_FILES = ui_scriptrunner.py mainwindow.py ui_preferences.py ui_traceback.py 
 
 RESOURCE_FILES = resources.py
+
+HELP_FILES = doc/_build/html
 
 default: compile
 
@@ -42,20 +45,23 @@ compile: $(UI_FILES) $(RESOURCE_FILES)
 
 # The deploy  target only works on unix like operating system where
 # the Python plugin directory is located at:
-# $HOME/.qgis/python/plugins
+# $HOME/$(DOTQGIS)/python/plugins
 deploy: compile
-	mkdir -p $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	cp -vf $(PY_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	cp -vf $(UI_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	cp -vf $(RESOURCE_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	cp -vf $(EXTRAS) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
+	mkdir -p $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
+	cp -vf $(PY_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
+	cp -vf $(UI_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
+	cp -vf $(RESOURCE_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
+	cp -vf $(EXTRAS) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
+	cp -rvf $(HELP_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)/help
 
 zipfile: compile
+	rm -rvf ./$(WORKDIR)
 	mkdir -p $(WORKDIR)/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(WORKDIR)/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(WORKDIR)/$(PLUGINNAME)
 	cp -vf $(RESOURCE_FILES) $(WORKDIR)/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(WORKDIR)/$(PLUGINNAME)
+	cp -rvf $(HELP_FILES) $(WORKDIR)/$(PLUGINNAME)/help
 	cd $(WORKDIR);zip -9vr $(PLUGINNAME).zip $(PLUGINNAME)
 
 dist: zipfile
