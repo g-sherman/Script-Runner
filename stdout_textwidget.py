@@ -50,4 +50,3 @@ class StdoutTextEdit(QTextEdit):
         QCoreApplication.processEvents()
         sys.__stdout__.flush()
         self.new_output.emit(str(text))
-

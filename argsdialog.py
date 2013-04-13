@@ -3,6 +3,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 
+
 class ArgsDialog(QDialog):
 
     def __init__(self, argspec, script_name):
@@ -11,7 +12,6 @@ class ArgsDialog(QDialog):
         self.setMinimumWidth(400)
         self.grid = QGridLayout(self)
         self.build_dialog(argspec)
-        
 
     def build_dialog(self, argspec):
         # args is an ArgSpec object
@@ -33,17 +33,18 @@ class ArgsDialog(QDialog):
                 self.grid.addWidget(le, row, col)
                 self.arg_map.append(le)
                 row += 1
-                col =0
+                col = 0
                 arg_count += 1
 
         # check to see if the method accepts keyword args
         if argspec.keywords:
             self.grid.addWidget(QLabel(
                 "Enter comma separated keyword arguments as key=value pairs."),
-                 row, 0, 1, 2)
+                row, 0, 1, 2)
             row += 1
             self.grid.addWidget(QLabel(
-                "String values must be quoted. Example: path='/data', buffer=100"),
+                "String values must be quoted. "
+                "Example: path='/data', buffer=100"),
                 row, 0, 1, 2)
             row += 1
             self.keywords = QLineEdit()
@@ -64,7 +65,6 @@ class ArgsDialog(QDialog):
         btn_cancel.clicked.connect(self.reject)
         h_layout.addWidget(btn_cancel)
         self.grid.addLayout(h_layout, row, 0, 1, 2)
-
 
     def show_dialog(self):
         result = self.exec_()
@@ -87,6 +87,3 @@ class ArgsDialog(QDialog):
             return arg_map
         else:
             return None
-
-
-

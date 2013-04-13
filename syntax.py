@@ -1,8 +1,21 @@
-"""syntax.py
+"""
+Syntax Highlighting: syntax.py
 
+ScriptRunner - A QGIS plugin that runs scripts to automate QGIS tasks.
+
+Date: 2013-03-14
+Copyright: (C) 2013 by GeoApt LLC
+Email: gsherman@geoapt.com
+
+Credit:
   Taken from: http://diotavelli.net/PyQtWiki/Python%20syntax%20highlighting:
-      "Based on existing work by Carson Farmer and Christophe Kibleur,
-       and an example on the SciPres wiki."
+  "Based on existing work by Carson Farmer and Christophe Kibleur,
+  and an example on the SciPres wiki."
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
 
 """
 

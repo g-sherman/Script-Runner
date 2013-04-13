@@ -4,7 +4,7 @@ Import the UI and intialize it.
 ScriptRunner - A QGIS plugin that runs scripts to automate QGIS tasks.
 
 Date: 2012-01-27
-Copyright: (C) 2012 by GeoApt LLC
+Copyright: (C) 2012-2013 by GeoApt LLC
 Email: gsherman@geoapt.com
 
 
