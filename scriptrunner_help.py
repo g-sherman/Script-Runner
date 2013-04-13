@@ -1,7 +1,7 @@
 """
 
 Help strings used in the plugin:
-    htmlhelp: HTML for the Help tab
+    htmlhelp: HTML for the Help tab - deprecated; help now displayed in browser
     htmlabout: HTML for the About tab
 
 """
@@ -188,9 +188,10 @@ def htmlabout():
        <ul>
        <li>For named arguments, prompt by name</li>
        <li>Only one run button to run scripts with/without arguments</li>
-       <li>Moved help from tab to button that opens Sphinx doc in browser</li>
        <li>Fixed bug that prevented syntax highlighting from working when
        reloading a script</li>
+       <li>Updated documentation</li>
+       <li>Moved help from tab to button that opens Sphinx doc in browser</li>
        </ul>
        </ul>
        <ul>
