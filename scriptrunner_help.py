@@ -150,7 +150,7 @@ def htmlabout():
     """
     return """<html>
     <body>
-    <h3>Script Runner - Version 0.7</h3>
+    <h3>Script Runner - Version 0.71</h3>
     <p>
     Script Runner lets you run Python scripts in QGIS to automate and perform
     repetitive tasks.
@@ -184,10 +184,10 @@ def htmlabout():
    </ul>
        <h4>Changelog</h4>
        <ul>
-       <li>0.7</li>
+       <li>0.71</li>
        <ul>
-       <li>For named arguments, prompt by name</li>
-       <li>Only one run button to run scripts with/without arguments</li>
+       <li>For mandatory arguments, prompt by name</li>
+       <li>A single run button is now used to run scripts with or without arguments</li>
        <li>Fixed bug that prevented syntax highlighting from working when
        reloading a script</li>
        <li>Updated documentation</li>

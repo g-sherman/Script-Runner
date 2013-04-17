@@ -31,7 +31,7 @@ UI_FILES = ui_scriptrunner.py mainwindow.py ui_preferences.py ui_traceback.py
 
 RESOURCE_FILES = resources.py
 
-HELP_FILES = doc/_build/html
+HELP_FILES = doc/_build/html/
 
 default: compile
 
@@ -43,18 +43,23 @@ compile: $(UI_FILES) $(RESOURCE_FILES)
 %.py : %.ui
 	/usr/local/bin/pyuic4 -o $@ $<
 
+.PHONY: sphinx_doc
+
+sphinx_doc:
+	make -C doc html
+
 # The deploy  target only works on unix like operating system where
 # the Python plugin directory is located at:
 # $HOME/$(DOTQGIS)/python/plugins
-deploy: compile
+deploy: compile sphinx_doc
 	mkdir -p $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(RESOURCE_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
-	cp -rvf $(HELP_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)/help
+	cp -rvf $(HELP_FILES)/* $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)/help
 
-zipfile: compile
+zipfile: compile sphinx_doc
 	rm -rvf ./$(WORKDIR)
 	mkdir -p $(WORKDIR)/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(WORKDIR)/$(PLUGINNAME)

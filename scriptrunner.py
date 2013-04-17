@@ -89,7 +89,7 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
-        self.mw.setWindowTitle("Script Runner Version 0.7")
+        self.mw.setWindowTitle("Script Runner Version 0.71")
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
         stored_scripts = self.settings.value("ScriptRunner/scripts")
@@ -428,8 +428,8 @@ class ScriptRunner:
     def run_with_args(self):
         # get the args
         script_args = self.get_script_args()
-        print "script args:"
-        print script_args
+        #print "script args:"
+        #print script_args
 
         if script_args is not None:
             args_dlg = ArgsDialog(self.get_script_args(), self.script_name())
@@ -475,8 +475,8 @@ class ScriptRunner:
                     self.stdout.setPlainText('')
                 print "----------%s----------" % datetime.datetime.now()
                 print "Running %s in: %s" % (script_name, script_dir)
-                print user_args  # for debug
-                print type(user_args)
+                #print user_args  # for debug
+                #print type(user_args)
                 if type(user_args) is not dict:
                     user_script.run_script(self.iface)
                 else:
@@ -491,7 +491,7 @@ class ScriptRunner:
                         func += ", **kwargs)"
                     else:
                         func += ")"
-                    print "func is %s" % func
+                    #print "func is %s" % func
                     exec(func)
             except:
                 # show traceback

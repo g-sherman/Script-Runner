@@ -34,7 +34,7 @@ def version():
     """
     Return the version of the plugin.
     """
-    return "Version 0.7"
+    return "Version 0.71"
 
 
 def icon():

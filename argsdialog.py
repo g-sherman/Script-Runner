@@ -74,7 +74,10 @@ class ArgsDialog(QDialog):
             arg_map = dict()
             # fetch the args values
             for line_edit in self.arg_map:
-                arg_values.append(str(line_edit.text()))
+                if line_edit.text().isEmpty():
+                    arg_values.append(None)
+                else:
+                    arg_values.append(str(line_edit.text()))
             arg_map['args'] = arg_values
 
             if self.keywords:
