@@ -48,33 +48,33 @@ class PreferencesDialog(QtGui.QDialog):
 
     def restore_settings(self):
         auto_display = self.settings.value(
-            "ScriptRunner/auto_display", True)
-        self.ui.cbAutoDisplay.setChecked(auto_display.toBool())
+            "ScriptRunner/auto_display", True, type=bool)
+        self.ui.cbAutoDisplay.setChecked(auto_display)
         show_console = self.settings.value(
-            "ScriptRunner/show_console", True)
-        self.ui.cbShowConsole.setChecked(show_console.toBool())
+            "ScriptRunner/show_console", True, type=bool)
+        self.ui.cbShowConsole.setChecked(show_console)
         clear_console = self.settings.value(
-            "ScriptRunner/clear_console", False)
-        self.ui.cbClearConsole.setChecked(clear_console.toBool())
+            "ScriptRunner/clear_console", False, type=bool)
+        self.ui.cbClearConsole.setChecked(clear_console)
         log_output = self.settings.value(
-            "ScriptRunner/log_output_to_disk", False)
-        self.ui.cbLogToDisk.setChecked(log_output.toBool())
+            "ScriptRunner/log_output_to_disk", False, type=bool)
+        self.ui.cbLogToDisk.setChecked(log_output)
 
         log_dir = self.settings.value(
             "ScriptRunner/log_directory", "")
-        self.ui.leLogDirectory.setText(log_dir.toString())
+        self.ui.leLogDirectory.setText(log_dir)
 
         log_overwite = self.settings.value(
-            "ScriptRunner/log_overwrite", False)
-        self.ui.cbOverwriteLogFile.setChecked(log_overwite.toBool())
+            "ScriptRunner/log_overwrite", False, type=bool)
+        self.ui.cbOverwriteLogFile.setChecked(log_overwite)
 
         use_custom_editor = self.settings.value(
-            "ScriptRunner/use_custom_editor", False)
-        self.ui.cbCustomEditor.setChecked(use_custom_editor.toBool())
+            "ScriptRunner/use_custom_editor", False, type=bool)
+        self.ui.cbCustomEditor.setChecked(use_custom_editor)
 
         custom_editor = self.settings.value(
             "ScriptRunner/custom_editor", "")
-        self.ui.leCustomEditorPath.setText(custom_editor.toString())
+        self.ui.leCustomEditorPath.setText(custom_editor)
 
         # disable controls based on parent settings
         self.changed_log_to_disk(self.ui.cbLogToDisk.checkState())

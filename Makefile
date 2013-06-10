@@ -52,6 +52,7 @@ sphinx_doc:
 # the Python plugin directory is located at:
 # $HOME/$(DOTQGIS)/python/plugins
 deploy: compile sphinx_doc
+#deploy: compile 
 	mkdir -p $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)

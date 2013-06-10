@@ -89,11 +89,11 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
-        self.mw.setWindowTitle("Script Runner Version 0.71")
+        self.mw.setWindowTitle("Script Runner Version 0.8")
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
-        stored_scripts = self.settings.value("ScriptRunner/scripts")
-        self.list_of_scripts = stored_scripts.toList()
+        stored_scripts = self.settings.value("ScriptRunner/scripts", [])
+        self.list_of_scripts = stored_scripts
 
         # Create action that will start plugin configuration
         self.action = QAction(QIcon(":/plugins/scriptrunner/icon.png"),
@@ -250,14 +250,14 @@ class ScriptRunner:
         else:
             # add the list of scripts fetched from settings
             for script in self.list_of_scripts:
-                full_path = str(script.toString())
+                full_path = script
                 (script_dir, script_name) = os.path.split(full_path)
                 (has_run_method, uses_args) = self.have_run_method(full_path)
                 if has_run_method:
                     if uses_args:
                         script_name += '**'
                     item = QListWidgetItem(script_name, self.scriptList)
-                    item.setToolTip(script.toString())
+                    item.setToolTip(script)
                 else:
                     self.stdout_textedit.write(
                         "!!Script %s is missing the run_script method"
@@ -555,7 +555,7 @@ class ScriptRunner:
         the list of scripts.
         """
         self.settings.setValue("ScriptRunner/scripts",
-                               QVariant(self.list_of_scripts))
+                               self.list_of_scripts)
 
     def sweep_console(self):
         self.stdout_textedit.setPlainText('')
@@ -569,21 +569,21 @@ class ScriptRunner:
 
     def fetch_settings(self):
         self.auto_display = self.settings.value(
-            "ScriptRunner/auto_display", True).toBool()
+            "ScriptRunner/auto_display", True, type=bool)
         self.clear_console = self.settings.value(
-            "ScriptRunner/clear_console", True).toBool()
+            "ScriptRunner/clear_console", True, type=bool)
         self.show_console = self.settings.value(
-            "ScriptRunner/show_console", True).toBool()
+            "ScriptRunner/show_console", True, type=bool)
         self.log_output = self.settings.value(
-            "ScriptRunner/log_output_to_disk", False).toBool()
+            "ScriptRunner/log_output_to_disk", False, type=bool)
         self.log_dir = self.settings.value(
-            "ScriptRunner/log_directory", "/tmp").toString()
+            "ScriptRunner/log_directory", "/tmp")
         self.log_overwrite = self.settings.value(
-            "ScriptRunner/log_overwrite", False).toBool()
+            "ScriptRunner/log_overwrite", False, type=bool)
         self.use_custom_editor = self.settings.value(
-            "ScriptRunner/use_custom_editor", False).toBool()
-        self.custom_editor = str(
-            self.settings.value("ScriptRunner/custom_editor", "").toString())
+            "ScriptRunner/use_custom_editor", False, type=bool)
+        self.custom_editor = self.settings.value(
+            "ScriptRunner/custom_editor", "")
 
     def configure_console(self):
         self.stdout = self.stdout_textedit
@@ -703,8 +703,10 @@ class ScriptRunner:
                 sys.__stdout__.flush()
 
     def restore_window_position(self):
+        # TODO fix after sorting out how to do it @ api v2
+        #if self.settings.contains("ScriptRunner/geometry"):
         self.mw.restoreGeometry(
-            self.settings.value("ScriptRunner/geometry").toByteArray())
+            self.settings.value("ScriptRunner/geometry", QByteArray(), type=QByteArray))
 
     def open_help(self):
         help_url = QUrl("file:///%s/help/index.html" % self.plugin_dir)

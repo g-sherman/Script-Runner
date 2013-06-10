@@ -28,5 +28,5 @@ class Loader:
 
 def run_script(iface):
     ldr = Loader(iface)
-    print "Loading all shapefiles in /data/vmap0_shapefiles"
-    ldr.load_shapefiles('/data/vmap0_shapefiles')
+    print "Loading all shapefiles in /dev1/gis_data/qgis_sample_data/shapefiles"
+    ldr.load_shapefiles('/dev1/gis_data/qgis_sample_data/shapefiles')

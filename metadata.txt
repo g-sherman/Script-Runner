@@ -10,9 +10,9 @@
 
 [general]
 name=ScriptRunner
-qgisMinimumVersion=1.8
+qgisMinimumVersion=2.0
 description=Run scripts to automate QGIS tasks
-version=0.71
+version=0.8
 author=GeoApt LLC
 email=gsherman@geoapt.com
 

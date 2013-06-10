@@ -34,7 +34,7 @@ def version():
     """
     Return the version of the plugin.
     """
-    return "Version 0.71"
+    return "Version 0.8"
 
 
 def icon():
@@ -48,7 +48,7 @@ def qgisMinimumVersion():
     """
     Return the minimum version of QGIS needed to use this plugin.
     """
-    return "1.8"
+    return "2.0"
 
 
 def author():
