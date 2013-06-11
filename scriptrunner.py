@@ -94,7 +94,7 @@ class ScriptRunner:
         self.mw.setWindowTitle("Script Runner Version 1.99")
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
-        stored_scripts = self.settings.value("ScriptRunner/scripts", [])
+        stored_scripts = self.settings.value("ScriptRunner/scripts", [], type=list)
         self.list_of_scripts = stored_scripts
 
         # Create action that will start plugin configuration
