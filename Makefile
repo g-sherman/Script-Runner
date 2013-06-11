@@ -25,7 +25,7 @@ PLUGINNAME = scriptrunner
 
 PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py preferences_dialog.py traceback_dialog.py scriptrunner_help.py stdout_textwidget.py syntax.py argsdialog.py
 
-EXTRAS = icon.png metadata.txt
+EXTRAS = icon.png metadata.txt new_file.tmpl
 
 UI_FILES = ui_scriptrunner.py mainwindow.py ui_preferences.py ui_traceback.py 
 
@@ -38,10 +38,10 @@ default: compile
 compile: $(UI_FILES) $(RESOURCE_FILES)
 
 %.py : %.qrc
-	/usr/local/bin/pyrcc4 -o $@  $<
+	pyrcc4 -o $@  $<
 
 %.py : %.ui
-	/usr/local/bin/pyuic4 -o $@ $<
+	pyuic4 -o $@ $<
 
 .PHONY: sphinx_doc
 

@@ -41,11 +41,15 @@ class StdoutTextEdit(QTextEdit):
         self.cursor = QTextCursor(self.textCursor())
         self.setTextCursor(self.cursor)
 
-    def write(self, text):
+    def write(self, text, warning=False):
         cursor = QTextCursor(self.textCursor())
         cursor.movePosition(QTextCursor.End)
         self.setTextCursor(cursor)
-        self.insertPlainText(text)
+        if warning:
+            self.setTextColor(QColor(Qt.red))
+            self.insertPlainText(text)
+        else:
+            self.insertPlainText(text)
         self.ensureCursorVisible()
         QCoreApplication.processEvents()
         sys.__stdout__.flush()

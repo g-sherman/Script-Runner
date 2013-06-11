@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_preferences.ui'
 #
-# Created: Sat Mar 16 15:12:30 2013
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Mon Jun 10 21:35:08 2013
+#      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_PrefsDialog(object):
     def setupUi(self, PrefsDialog):
         PrefsDialog.setObjectName(_fromUtf8("PrefsDialog"))
-        PrefsDialog.resize(528, 354)
+        PrefsDialog.resize(547, 354)
         self.gridLayout_4 = QtGui.QGridLayout(PrefsDialog)
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
         self.groupBox = QtGui.QGroupBox(PrefsDialog)
@@ -51,7 +51,7 @@ class Ui_PrefsDialog(object):
         self.groupBoxOutput = QtGui.QGroupBox(PrefsDialog)
         self.groupBoxOutput.setObjectName(_fromUtf8("groupBoxOutput"))
         self.layoutWidget = QtGui.QWidget(self.groupBoxOutput)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 110, 433, 58))
+        self.layoutWidget.setGeometry(QtCore.QRect(10, 120, 433, 58))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.gridLayout = QtGui.QGridLayout(self.layoutWidget)
         self.gridLayout.setMargin(0)
@@ -74,7 +74,7 @@ class Ui_PrefsDialog(object):
         self.cbOverwriteLogFile.setObjectName(_fromUtf8("cbOverwriteLogFile"))
         self.gridLayout.addWidget(self.cbOverwriteLogFile, 1, 1, 1, 2)
         self.layoutWidget1 = QtGui.QWidget(self.groupBoxOutput)
-        self.layoutWidget1.setGeometry(QtCore.QRect(8, 40, 259, 62))
+        self.layoutWidget1.setGeometry(QtCore.QRect(8, 40, 352, 80))
         self.layoutWidget1.setObjectName(_fromUtf8("layoutWidget1"))
         self.gridLayout_3 = QtGui.QGridLayout(self.layoutWidget1)
         self.gridLayout_3.setMargin(0)
@@ -83,6 +83,7 @@ class Ui_PrefsDialog(object):
         self.cbShowConsole.setObjectName(_fromUtf8("cbShowConsole"))
         self.gridLayout_3.addWidget(self.cbShowConsole, 0, 0, 1, 1)
         self.cbClearConsole = QtGui.QCheckBox(self.layoutWidget1)
+        self.cbClearConsole.setMinimumSize(QtCore.QSize(350, 0))
         self.cbClearConsole.setObjectName(_fromUtf8("cbClearConsole"))
         self.gridLayout_3.addWidget(self.cbClearConsole, 1, 0, 1, 1)
         self.cbLogToDisk = QtGui.QCheckBox(self.layoutWidget1)

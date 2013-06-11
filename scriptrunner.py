@@ -21,6 +21,7 @@ import subprocess
 import re
 import inspect
 import datetime
+
 if platform.system() == 'Windows':
     import win32api
 
@@ -63,6 +64,7 @@ class ScriptRunner:
         Save reference to the QGIS interface
         """
         self.iface = iface
+        self.plugin_dir = os.path.dirname(__file__)
 
         self.settings = QSettings()
         self.fetch_settings()
@@ -89,7 +91,7 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
-        self.mw.setWindowTitle("Script Runner Version 0.8")
+        self.mw.setWindowTitle("Script Runner Version 1.99")
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
         stored_scripts = self.settings.value("ScriptRunner/scripts", [])
@@ -117,7 +119,7 @@ class ScriptRunner:
         self.add_action = QAction(QIcon(":plugins/scriptrunner/add_icon"),
                                   "Add Script", self.mw)
         self.toolbar.addAction(self.add_action)
-        self.add_action.triggered.connect(self.add_script)
+        self.add_action.triggered.connect(self.get_script_path)
 
         # action for running a script
         self.run_action = QAction(QIcon(":plugins/scriptrunner/run_icon"),
@@ -157,7 +159,7 @@ class ScriptRunner:
         self.toolbar.addAction(self.clear_action)
         self.clear_action.triggered.connect(self.sweep_console)
 
-        # action for setting prevferences
+        # action for setting preferences
         self.prefs_action = QAction(QIcon(":plugins/scriptrunner/prefs_icon"),
                                     "Preferences", self.mw)
         self.toolbar.addAction(self.prefs_action)
@@ -191,6 +193,7 @@ class ScriptRunner:
         self.layout.addWidget(self.splitter)
 
         self.scriptList = QListWidget()
+        self.scriptList.setSortingEnabled(True)
         # connect double click to info slot
         #self.scriptList.itemDoubleClicked.connect(self.item_info)
         self.scriptList.currentItemChanged.connect(self.current_script_changed)
@@ -248,20 +251,35 @@ class ScriptRunner:
             # make the help tab visible if no scripts are loaded
             self.tabWidget.setCurrentIndex(2)
         else:
+            pop_list = []
             # add the list of scripts fetched from settings
             for script in self.list_of_scripts:
-                full_path = script
-                (script_dir, script_name) = os.path.split(full_path)
-                (has_run_method, uses_args) = self.have_run_method(full_path)
-                if has_run_method:
-                    if uses_args:
-                        script_name += '**'
-                    item = QListWidgetItem(script_name, self.scriptList)
-                    item.setToolTip(script)
+                if os.path.exists(script):
+                    full_path = script
+                    (script_dir, script_name) = os.path.split(full_path)
+                    (has_run_method, uses_args) = self.have_run_method(full_path)
+                    if has_run_method:
+                        if uses_args:
+                            script_name += '**'
+                        item = QListWidgetItem(script_name, self.scriptList)
+                        item.setToolTip(script)
+                    else:
+                        self.stdout_textedit.write(
+                            "WARNING: Script %s is missing the run_script method"
+                            "---not loaded\n" % full_path, True)
                 else:
                     self.stdout_textedit.write(
-                        "!!Script %s is missing the run_script method"
-                        "---not loaded!!\n" % full_path)
+                        "WARNING: Your previously loaded script %s does not exist "
+                        "and cannot be loaded. It will be removed from your "
+                        "list of stored scripts.\n" % script, True)
+                    pop_list.append(script)
+            for script in pop_list:
+                #self.stdout_textedit.write("Removed %s from the list of "
+                #  "loaded scripts.\n" % script)
+                self.list_of_scripts.pop(
+                   self.list_of_scripts.index(script))
+                self.update_settings()
+
             self.stdout_textedit.ensureCursorVisible()
 
         self.scriptList.setCurrentRow(0)
@@ -273,33 +291,61 @@ class ScriptRunner:
         self.iface.removePluginMenu("&ScriptRunner", self.action)
         self.iface.removeToolBarIcon(self.action)
 
-    def add_script(self):
-        """
-        Add a script to the list of scripts that can be executed.
-        """
+    def get_script_path(self):
         script = QFileDialog.getOpenFileName(None, "Add a Python Script",
                                              "", "Python scripts (*.py)")
         if script:
-            # check to see if we have a run method without importing the script
-            run_method_check = self.have_run_method(script)
-            if run_method_check[0]:  # self.have_run_method(script):
-                (script_dir, script_name) = os.path.split(str(script))
-                if run_method_check[1]:
-                    script_name += '**'
-                item = QListWidgetItem(script_name, self.scriptList)
-                item.setToolTip(script)
-                self.main_window.statusbar.showMessage(
-                    "Added script: %s" % script)
-                self.list_of_scripts.append(script)
-                self.update_settings()
-
+            if os.path.exists(script):
+                self.add_script(script)
             else:
-                QMessageBox.information(
-                    None, "Error",
-                    """Your script must have a run_script() function defined.\n
-                    Adding the script failed.""")
-                self.main_window.statusbar.showMessage(
-                    "Failed to add: %s - no run_script function" % script)
+                choice = QMessageBox.question(
+                    None,
+                    "No Script",
+                    "The script %s does not exist. Would you "
+                    "you like to create a basic template to "
+                    "work with?" % os.path.basename(script),
+                    QMessageBox.Yes | QMessageBox.No, 
+                    QMessageBox.Yes)
+                if choice == QMessageBox.Yes:
+                    (path, ext) = os.path.splitext(script)
+                    if ext != ".py":
+                        script += ".py"
+                    # create the the file and write
+                    new_script = open(script, "w")
+                    template = open(os.path.join(self.plugin_dir, 'new_file.tmpl'), "r")
+                    contents = template.read()
+                    new_script.write(contents)
+                    new_script.close()
+                    template.close()
+                    self.add_script(script)
+              
+
+
+    def add_script(self, script):
+        """
+        Add a script to the list of scripts that can be executed.
+        """
+        # check to see if we have a run method without importing the script
+        run_method_check = self.have_run_method(script)
+        if run_method_check[0]:  # self.have_run_method(script):
+            (script_dir, script_name) = os.path.split(str(script))
+            if run_method_check[1]:
+                script_name += '**'
+            item = QListWidgetItem(script_name, self.scriptList)
+            item.setToolTip(script)
+            self.main_window.statusbar.showMessage(
+                "Added script: %s" % script)
+            self.list_of_scripts.append(script)
+            self.update_settings()
+
+        else:
+            QMessageBox.information(
+                None, "Error",
+                """Your script must have a run_script() function defined.\n
+                Adding the script failed.""")
+            self.main_window.statusbar.showMessage(
+                "Failed to add: %s - no run_script function. "
+                "See Help for more information." % script)
 
     def remove_script(self):
         """
@@ -323,34 +369,40 @@ class ScriptRunner:
         """
         item = self.scriptList.currentItem()
         if item is not None:
-            script = item.toolTip()
-            (script_dir, script_name) = os.path.split(str(script))
-            (user_module, ext) = os.path.splitext(script_name)
-            if user_module in sys.modules:
-                reload(sys.modules[user_module])
-                self.main_window.statusbar.showMessage(
-                    "Reloaded script: %s" % script)
-                (has_run_method, uses_args) = self.have_run_method(script)
-                if has_run_method:
-                    # set state of the run with args button
-                    #self.run_with_args_action.setEnabled(uses_args)
-                    if uses_args:
-                        # has keyword args: add ** to the name
-                        item.setText("%s**" % script_name)
+            try:
+                script = item.toolTip()
+                (script_dir, script_name) = os.path.split(str(script))
+                (user_module, ext) = os.path.splitext(script_name)
+                if user_module in sys.modules:
+                    reload(sys.modules[user_module])
+                    self.main_window.statusbar.showMessage(
+                        "Reloaded script: %s" % script)
+                    (has_run_method, uses_args) = self.have_run_method(script)
+                    if has_run_method:
+                        # set state of the run with args button
+                        #self.run_with_args_action.setEnabled(uses_args)
+                        if uses_args:
+                            # has keyword args: add ** to the name
+                            item.setText("%s**" % script_name)
+                        else:
+                            item.setText(script_name)
+                        self.info()
                     else:
-                        item.setText(script_name)
-                    self.info()
-                else:
-                    QMessageBox.warning(
-                        None, "Missing run_script",
-                        "Your script is now missing the required "
-                        "run_script method")
+                        QMessageBox.warning(
+                            None, "Missing run_script",
+                            "Your script is now missing the required "
+                            "run_script method")
 
-            else:
-                QMessageBox.information(
-                    None, "Reload",
-                    """The %s script was not reloaded since it hasn't\n
-                    been imported yet""" % user_module)
+                else:
+                    QMessageBox.information(
+                        None, "Reload",
+                        """The %s script was not reloaded since it hasn't\n
+                        been imported yet""" % user_module)
+            except:
+                QMessageBox.warning(None, "Error Reloading Script",
+                  "There was an error reloading %s. "
+                  "Perhaps you moved or deleted it?" % script)
+
 
     def info(self):
         """
@@ -359,62 +411,79 @@ class ScriptRunner:
         """
         item = self.scriptList.currentItem()
         if item is not None:  # in case no currentitem and none was passed
-            script = item.toolTip()
-            (script_dir, script_name) = os.path.split(str(script))
-            (user_module, ext) = os.path.splitext(script_name)
-            if script_dir not in sys.path:
-                sys.path.append(script_dir)
-            if not user_module in sys.modules:
-                __import__(user_module)
+            try:
+                script = item.toolTip()
+                (script_dir, script_name) = os.path.split(str(script))
+                (user_module, ext) = os.path.splitext(script_name)
+                if script_dir not in sys.path:
+                    sys.path.append(script_dir)
+                if not user_module in sys.modules:
+                    __import__(user_module)
 
-            # add the doc string to the info page
-            doc_string = inspect.getdoc(sys.modules[user_module])
-            if doc_string is None:
-                doc_string = \
-                    "You Have no Docstring. You really should add one..."
-            else:
-                doc_string = doc_string.replace('\n', '<br>')
-            html = "<h4>%s</h4><h4>Doc String:</h4>%s" % (script, doc_string)
+                # add the doc string to the info page
+                doc_string = inspect.getdoc(sys.modules[user_module])
+                if doc_string is None:
+                    doc_string = \
+                        "You Have no Docstring. You really should add one..."
+                else:
+                    doc_string = doc_string.replace('\n', '<br>')
+                html = "<h4>%s</h4><h4>Doc String:</h4>%s" % (script, doc_string)
 
-            # populate the source tab
-            highlighter = PythonHighlighter(self.textBrowserSource.document())
-            self.textBrowserSource.setPlainText(self.get_source(script))
-            #self.textBrowserSource.setHtml(self.get_source(script)) - deprecated
+                # populate the source tab
+                highlighter = PythonHighlighter(self.textBrowserSource.document())
+                source = self.get_source(script)
+                if source:
+                    self.textBrowserSource.setPlainText(self.get_source(script))
+                    #self.textBrowserSource.setHtml(self.get_source(script)) - deprecated
 
-            classes = inspect.getmembers(
-                sys.modules[user_module], inspect.isclass)
+                    classes = inspect.getmembers(
+                        sys.modules[user_module], inspect.isclass)
 
-            # populate classes and methdods
+                    # populate classes and methdods
 
-            html += "<h4>Classes and Methods for %s</h4><ul>" % script_name
+                    html += "<h4>Classes and Methods for %s</h4><ul>" % script_name
 
-            for cls in classes:
-                modinfo = inspect.getmodule(cls[1])
-                if modinfo:
-                    if modinfo.__name__ == user_module:
-                        html += "<li>%s</li>" % cls[0]
-                        html += "<ul>"
-                        for meth in inspect.getmembers(cls[1],
-                                                       inspect.ismethod):
-                            html += "<li>%s</li>" % meth[0]
-                        html += "</ul></ul>"
-            functions = inspect.getmembers(
-                sys.modules[user_module], inspect.isfunction)
-            html += "<h4>Functions in %s</h4><ul>" % script_name
-            for func in functions:
-                modinfo = inspect.getmodule(func[1])
-                if modinfo.__name__ == user_module:
-                    html += "<li>%s</li>" % func[0]
-            html += "</ul>"
+                    for cls in classes:
+                        modinfo = inspect.getmodule(cls[1])
+                        if modinfo:
+                            if modinfo.__name__ == user_module:
+                                html += "<li>%s</li>" % cls[0]
+                                html += "<ul>"
+                                for meth in inspect.getmembers(cls[1],
+                                                               inspect.ismethod):
+                                    html += "<li>%s</li>" % meth[0]
+                                html += "</ul></ul>"
+                    functions = inspect.getmembers(
+                        sys.modules[user_module], inspect.isfunction)
+                    html += "<h4>Functions in %s</h4><ul>" % script_name
+                    for func in functions:
+                        modinfo = inspect.getmodule(func[1])
+                        if modinfo.__name__ == user_module:
+                            html += "<li>%s</li>" % func[0]
+                    html += "</ul>"
 
-            self.textBrowser.setHtml(html)
-            #self.tabWidget.setCurrentIndex(0)
+                    self.textBrowser.setHtml(html)
+                    #self.tabWidget.setCurrentIndex(0)
+                else:
+                    QMessageBox.warning(
+                            None,
+                            "%s is Missing" % script,
+                            "The script %s has disappeared. Perhaps it was "
+                            "moved or deleted?" % script)
+            except:
+                QMessageBox.warning(None, "Error Fetching Script Info",
+                  "There was an error getting the information for %s. "
+                  "Perhaps you moved or deleted it?" % script)
+
 
     def get_source(self, script):
-        src = open(script, 'r')
-        source = src.read()
-        src.close()
-        return source
+        try:
+            src = open(script, 'r')
+            source = src.read()
+            src.close()
+            return source
+        except:
+            return None
 
     def dispatch_script(self):
         item = self.scriptList.currentItem()

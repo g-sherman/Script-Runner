@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>528</width>
+    <width>547</width>
     <height>354</height>
    </rect>
   </property>
@@ -95,7 +95,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>110</y>
+        <y>120</y>
         <width>433</width>
         <height>58</height>
        </rect>
@@ -165,8 +165,8 @@
        <rect>
         <x>8</x>
         <y>40</y>
-        <width>259</width>
-        <height>62</height>
+        <width>352</width>
+        <height>80</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
@@ -179,6 +179,12 @@
        </item>
        <item row="1" column="0">
         <widget class="QCheckBox" name="cbClearConsole">
+         <property name="minimumSize">
+          <size>
+           <width>350</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>Clear console before running a script</string>
          </property>
@@ -193,8 +199,6 @@
        </item>
       </layout>
      </widget>
-     <zorder>layoutWidget</zorder>
-     <zorder>layoutWidget</zorder>
     </widget>
    </item>
    <item row="2" column="0">
