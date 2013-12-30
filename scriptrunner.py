@@ -91,10 +91,12 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
-        self.mw.setWindowTitle("Script Runner Version 1.99")
+        self.mw.setWindowTitle("Script Runner Version 1.993")
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
-        stored_scripts = self.settings.value("ScriptRunner/scripts", [], type=list)
+        #if self.settings.contains("ScriptRunner/scripts"):
+        stored_scripts = self.settings.value("ScriptRunner/scripts", [], type=unicode)
+        #else:
         self.list_of_scripts = stored_scripts
 
         # Create action that will start plugin configuration
@@ -153,6 +155,14 @@ class ScriptRunner:
         self.toolbar.addAction(self.remove_action)
         self.remove_action.triggered.connect(self.remove_script)
 
+        # action for creating a new blank script
+        self.new_action = QAction(QIcon(
+            ":plugins/scriptrunner/new_script_icon"),
+            "New Script", self.mw)
+        self.toolbar.addAction(self.new_action)
+        self.new_action.triggered.connect(self.new_script)
+
+
         # action for clear console
         self.clear_action = QAction(QIcon(":plugins/scriptrunner/clear_icon"),
                                     "Clear Console", self.mw)
@@ -207,6 +217,8 @@ class ScriptRunner:
         self.context_menu.addAction(self.remove_action)
         self.context_menu.addAction(self.reload_action)
         self.context_menu.addAction(self.edit_action)
+        self.context_menu.addSeparator()
+        self.context_menu.addAction(self.new_action)
         self.context_menu.addSeparator()
         self.context_menu.addAction(self.clear_action)
         self.context_menu.addAction(self.toggle_console_action)
@@ -307,19 +319,7 @@ class ScriptRunner:
                     QMessageBox.Yes | QMessageBox.No, 
                     QMessageBox.Yes)
                 if choice == QMessageBox.Yes:
-                    (path, ext) = os.path.splitext(script)
-                    if ext != ".py":
-                        script += ".py"
-                    # create the the file and write
-                    new_script = open(script, "w")
-                    template = open(os.path.join(self.plugin_dir, 'new_file.tmpl'), "r")
-                    contents = template.read()
-                    new_script.write(contents)
-                    new_script.close()
-                    template.close()
-                    self.add_script(script)
-              
-
+                    self.add_empty_script(script)
 
     def add_script(self, script):
         """
@@ -623,6 +623,8 @@ class ScriptRunner:
         Update the setting for the plugin---at present just
         the list of scripts.
         """
+        #self.stdout_textedit.write("Update settings using %s" % str(self.list_of_scripts), True)
+
         self.settings.setValue("ScriptRunner/scripts",
                                self.list_of_scripts)
 
@@ -686,6 +688,27 @@ class ScriptRunner:
 
     def toggle_console(self):
         self.stdout_dock.setVisible(not self.stdout_dock.isVisible())
+
+    def new_script(self):
+        # get the path
+        script = QFileDialog.getSaveFileName(None, "Create a New Python Script",
+                                             "", "Python scripts (*.py)")
+        if script:
+            # create the script
+            self.add_empty_script(script)
+
+    def add_empty_script(self, script):
+        (path, ext) = os.path.splitext(script)
+        if ext != ".py":
+            script += ".py"
+        # create the the file and write
+        new_script = open(script, "w")
+        template = open(os.path.join(self.plugin_dir, 'new_file.tmpl'), "r")
+        contents = template.read()
+        new_script.write(contents)
+        new_script.close()
+        template.close()
+        self.add_script(script)
 
     def edit_script(self):
         item = self.scriptList.currentItem()

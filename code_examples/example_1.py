@@ -8,7 +8,7 @@ from qgis.gui import *
 def run_script(iface):
     mapreg = QgsMapLayerRegistry.instance()
     mapreg.removeAllMapLayers()
-    wb = QgsVectorLayer('/data/world_borders.shp', 'world_borders', 'ogr')
+    wb = QgsVectorLayer('/dev1/gis_data/qgis_sample_data/shapefiles/alaska.shp', 'world_borders', 'ogr')
     mapreg.instance().addMapLayer(wb)
     renderer = wb.rendererV2()
     symb = renderer.symbol()

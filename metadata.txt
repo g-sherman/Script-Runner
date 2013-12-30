@@ -12,7 +12,7 @@
 name=ScriptRunner
 qgisMinimumVersion=2.0
 description=Run scripts to automate QGIS tasks
-version=1.99
+version=1.993
 author=GeoApt LLC
 email=gsherman@geoapt.com
 
@@ -21,7 +21,7 @@ email=gsherman@geoapt.com
 # Optional items:
 
 # Uncomment the following line and add your changelog entries:
-changelog=Fix issues with scripts that are moved, renamed or deleted; Allow creation of a starter script by typing in a file name when adding a script; List of scripts is now sorted; Warning messages displayed in red in the console.
+changelog=Fix minor issue when starting with no loaded scripts
 
 # tags are comma separated with spaces allowed
 tags=python,scripts
