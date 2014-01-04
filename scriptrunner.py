@@ -95,7 +95,7 @@ class ScriptRunner:
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
         #if self.settings.contains("ScriptRunner/scripts"):
-        stored_scripts = self.settings.value("ScriptRunner/scripts", [], type=unicode)
+        stored_scripts = self.settings.value("ScriptRunner/scripts")
         #else:
         self.list_of_scripts = stored_scripts
 
