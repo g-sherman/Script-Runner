@@ -15,49 +15,8 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-
-def name():
-    """
-    Return the name of the plugin.
-    """
-    return "ScriptRunner"
-
-
-def description():
-    """
-    Return the description of the plugin (used by plugin installer).
-    """
-    return "Run scripts to automate QGIS tasks"
-
-
 def version():
-    """
-    Return the version of the plugin.
-    """
-    return "Version 1.993"
-
-
-def icon():
-    """
-    Return the name of the icon used in the toolbar.
-    """
-    return "icon.png"
-
-
-def qgisMinimumVersion():
-    """
-    Return the minimum version of QGIS needed to use this plugin.
-    """
-    return "2.0"
-
-
-def author():
-    return "gsherman"
-
-
-def email():
-    return "gsherman@geoapt.com"
-
+    return "2.0.1"
 
 def classFactory(iface):
     """

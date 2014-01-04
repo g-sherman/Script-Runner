@@ -91,7 +91,7 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
-        self.mw.setWindowTitle("Script Runner Version 1.993")
+        self.mw.setWindowTitle("Script Runner Version 2.0.1")
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
         #if self.settings.contains("ScriptRunner/scripts"):
@@ -117,9 +117,17 @@ class ScriptRunner:
         #self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
         ## Action setup
+
+        # action for creating a new blank script
+        self.new_action = QAction(QIcon(
+            ":plugins/scriptrunner/new_script_icon"),
+            "New Script", self.mw)
+        self.toolbar.addAction(self.new_action)
+        self.new_action.triggered.connect(self.new_script)
+
         # action for adding a script
         self.add_action = QAction(QIcon(":plugins/scriptrunner/add_icon"),
-                                  "Add Script", self.mw)
+                                  "Add Existing Script", self.mw)
         self.toolbar.addAction(self.add_action)
         self.add_action.triggered.connect(self.get_script_path)
 
@@ -154,14 +162,6 @@ class ScriptRunner:
             "Remove Script", self.mw)
         self.toolbar.addAction(self.remove_action)
         self.remove_action.triggered.connect(self.remove_script)
-
-        # action for creating a new blank script
-        self.new_action = QAction(QIcon(
-            ":plugins/scriptrunner/new_script_icon"),
-            "New Script", self.mw)
-        self.toolbar.addAction(self.new_action)
-        self.new_action.triggered.connect(self.new_script)
-
 
         # action for clear console
         self.clear_action = QAction(QIcon(":plugins/scriptrunner/clear_icon"),

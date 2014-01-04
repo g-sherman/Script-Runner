@@ -61,7 +61,7 @@ class PreferencesDialog(QtGui.QDialog):
         self.ui.cbLogToDisk.setChecked(log_output)
 
         log_dir = self.settings.value(
-            "ScriptRunner/log_directory", "")
+            "ScriptRunner/log_directory", "", type=unicode)
         self.ui.leLogDirectory.setText(log_dir)
 
         log_overwite = self.settings.value(

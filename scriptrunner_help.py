@@ -150,7 +150,7 @@ def htmlabout():
     """
     return """<html>
     <body>
-    <h3>Script Runner - Version 1.992</h3>
+    <h3>Script Runner - Version 2.0.1</h3>
     <p>
     Script Runner lets you run Python scripts in QGIS to automate and perform
     repetitive tasks.

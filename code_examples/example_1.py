@@ -13,8 +13,7 @@ def run_script(iface):
     renderer = wb.rendererV2()
     symb = renderer.symbol()
     symb.setColor(QColor(Qt.red))
-    wb.setCacheImage(None)
-    wb.triggerRepaint()
+    iface.mapCanvas().refresh()
     if QGis.QGIS_VERSION_INT < 10900:
         iface.refreshLegend(wb)
     else:
