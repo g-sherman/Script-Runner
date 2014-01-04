@@ -73,7 +73,7 @@ class PreferencesDialog(QtGui.QDialog):
         self.ui.cbCustomEditor.setChecked(use_custom_editor)
 
         custom_editor = self.settings.value(
-            "ScriptRunner/custom_editor", "")
+            "ScriptRunner/custom_editor", "", type=unicode)
         self.ui.leCustomEditorPath.setText(custom_editor)
 
         # disable controls based on parent settings
