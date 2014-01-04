@@ -362,6 +362,11 @@ class ScriptRunner:
                     self.list_of_scripts.index(item.toolTip()))
                 self.update_settings()
                 self.scriptList.takeItem(self.scriptList.currentRow())
+            if self.scriptList.count < 1:
+                # clear the info and source tabs
+                self.textBrowserSource.setPlainText('')
+                self.textBrowser.setPlainText('')
+
 
     def reload_script(self):
         """
@@ -612,7 +617,8 @@ class ScriptRunner:
     def current_script_changed(self):
         # check to see if it uses args
         item = self.scriptList.currentItem()
-        label = str(item.text())
+        if item:
+            label = str(item.text())
         #self.run_with_args_action.setEnabled(label[-2:] == "**")
 
         if self.auto_display:
