@@ -184,6 +184,12 @@ def htmlabout():
    </ul>
        <h4>Changelog</h4>
        <ul>
+       <li>2.0.1</li>
+       <ul>
+       <li>New icons and bug fixes</li>
+       </ul>
+       </ul>
+       <ul>
        <li>1.991</li>
        <ul>
        <li>Fix minor error when fetching the list of loaded scripts</li>

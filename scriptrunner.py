@@ -97,6 +97,8 @@ class ScriptRunner:
         #if self.settings.contains("ScriptRunner/scripts"):
         stored_scripts = self.settings.value("ScriptRunner/scripts")
         #else:
+        if not stored_scripts:
+            stored_scripts = []
         self.list_of_scripts = stored_scripts
 
         # Create action that will start plugin configuration
@@ -362,10 +364,6 @@ class ScriptRunner:
                     self.list_of_scripts.index(item.toolTip()))
                 self.update_settings()
                 self.scriptList.takeItem(self.scriptList.currentRow())
-            if self.scriptList.count < 1:
-                # clear the info and source tabs
-                self.textBrowserSource.setPlainText('')
-                self.textBrowser.setPlainText('')
 
 
     def reload_script(self):
@@ -619,10 +617,13 @@ class ScriptRunner:
         item = self.scriptList.currentItem()
         if item:
             label = str(item.text())
-        #self.run_with_args_action.setEnabled(label[-2:] == "**")
+            if self.auto_display:
+                self.info()
+        else:
+            # clear the info and source tabs
+            self.textBrowserSource.setPlainText('')
+            self.textBrowser.setPlainText('')
 
-        if self.auto_display:
-            self.info()
 
     def update_settings(self):
         """
