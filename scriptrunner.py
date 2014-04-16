@@ -401,10 +401,9 @@ class ScriptRunner:
                         None, "Reload",
                         """The %s script was not reloaded since it hasn't\n
                         been imported yet""" % user_module)
-            except:
-                QMessageBox.warning(None, "Error Reloading Script",
-                  "There was an error reloading %s. "
-                  "Perhaps you moved or deleted it?" % script)
+            except Exception as e:
+                QMessageBox.warning(None, "Error Fetching Script Info",
+                  "There was an error reloading %s because of the following error :\n%s" % (script, str(e)))
 
 
     def info(self):
@@ -473,10 +472,9 @@ class ScriptRunner:
                             "%s is Missing" % script,
                             "The script %s has disappeared. Perhaps it was "
                             "moved or deleted?" % script)
-            except:
+            except Exception as e:
                 QMessageBox.warning(None, "Error Fetching Script Info",
-                  "There was an error getting the information for %s. "
-                  "Perhaps you moved or deleted it?" % script)
+                  "There was an error getting the information for %s because of the following error :\n%s" % (script, str(e)))
 
 
     def get_source(self, script):
