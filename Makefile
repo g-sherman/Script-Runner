@@ -19,7 +19,8 @@
 
 # Makefile for a PyQGIS plugin 
 
-DOTQGIS = .qgis2
+#DOTQGIS = .qgis3
+DOTQGIS = Library/Application\ Support/QGIS/QGIS3/profiles/default/
 WORKDIR = work_dir
 PLUGINNAME = scriptrunner
 
@@ -38,10 +39,10 @@ default: compile
 compile: $(UI_FILES) $(RESOURCE_FILES)
 
 %.py : %.qrc
-	pyrcc4 -o $@  $<
+	pyrcc5 -o $@  $<
 
 %.py : %.ui
-	pyuic4 -o $@ $<
+	pyuic5 -o $@ $<
 
 .PHONY: sphinx_doc
 
@@ -58,6 +59,7 @@ deploy: compile sphinx_doc
 	cp -vf $(UI_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(RESOURCE_FILES) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)
+	mkdir -p $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)/help
 	cp -rvf $(HELP_FILES)/* $(HOME)/$(DOTQGIS)/python/plugins/$(PLUGINNAME)/help
 
 zipfile: compile sphinx_doc

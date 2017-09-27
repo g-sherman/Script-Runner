@@ -15,12 +15,12 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt
-from ui_preferences import Ui_PrefsDialog
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from .ui_preferences import Ui_PrefsDialog
 
 
-class PreferencesDialog(QtGui.QDialog):
+class PreferencesDialog(QtWidgets.QDialog):
     """
     This class initializes the preferences dialog for Script Runner
     """
@@ -29,7 +29,7 @@ class PreferencesDialog(QtGui.QDialog):
         """
         Set up the user interface from Designer.
         """
-        QtGui.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         self.ui = Ui_PrefsDialog()
         self.ui.setupUi(self)
 

@@ -26,27 +26,28 @@ if platform.system() == 'Windows':
     import win32api
 
 # Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from qgis.core import *
 #from qgis import console
 # Initialize Qt resources from file resources.py
-import resources
+from .resources import *
 # Import the code for the dialog
-from scriptrunner_mainwindow import ScriptRunnerMainWindow
+from .scriptrunner_mainwindow import ScriptRunnerMainWindow
 # Import the preferenes dialog
-from preferences_dialog import PreferencesDialog
+from .preferences_dialog import PreferencesDialog
 # Import the traceback dialog
-from traceback_dialog import TracebackDialog
+from .traceback_dialog import TracebackDialog
 # Import the stdout dialog
-from stdout_textwidget import StdoutTextEdit
+from .stdout_textwidget import StdoutTextEdit
 # Import the help module
-from scriptrunner_help import *
+from .scriptrunner_help import *
 #from highlighter import *
-from syntax import *
+from .syntax import *
 # ars dialog
-from argsdialog import ArgsDialog
+from .argsdialog import ArgsDialog
 
 # for remote pydev debug (remove prior to production)
 #import debug_settings
@@ -81,7 +82,7 @@ class ScriptRunner:
         self.last_args = ''
 
         self.plugin_dir = QFileInfo(
-            QgsApplication.qgisUserDbFilePath()).path() + \
+            QgsApplication.qgisUserDatabaseFilePath()).path() + \
             "/python/plugins/scriptrunner"
 
     def initGui(self):
@@ -306,7 +307,7 @@ class ScriptRunner:
         self.iface.removeToolBarIcon(self.action)
 
     def get_script_path(self):
-        script = QFileDialog.getOpenFileName(None, "Add a Python Script",
+        (script, ext) = QFileDialog.getOpenFileName(None, "Add a Python Script",
                                              "", "Python scripts (*.py)")
         if script:
             if os.path.exists(script):
@@ -498,7 +499,7 @@ class ScriptRunner:
     def run_with_args(self):
         # get the args
         script_args = self.get_script_args()
-        #print "script args:"
+        #print("script args:"
         #print script_args
 
         if script_args is not None:
@@ -543,10 +544,11 @@ class ScriptRunner:
                 sys.stdout = self.stdout
                 if self.clear_console:
                     self.stdout.setPlainText('')
-                print "----------%s----------" % datetime.datetime.now()
-                print "Running %s in: %s" % (script_name, script_dir)
+                print("----------%s----------" % datetime.datetime.now())
+                print("Running %s in: %s" % (script_name, script_dir))
                 #print user_args  # for debug
-                #print type(user_args)
+                print("user_args type: %s" % type(user_args))
+                print("iface type: %s" % type(self.iface))
                 if type(user_args) is not dict:
                     user_script.run_script(self.iface)
                 else:
@@ -561,7 +563,7 @@ class ScriptRunner:
                         func += ", **kwargs)"
                     else:
                         func += ")"
-                    #print "func is %s" % func
+                    #print("func is %s" % func)
                     exec(func)
             except:
                 # show traceback
@@ -572,10 +574,10 @@ class ScriptRunner:
                 tb.show()
                 tb.exec_()
                 abnormal_exit = True
-                print "\n%s\nAbnormal termination" % self.last_traceback
+                print("\n%s\nAbnormal termination" % self.last_traceback)
                 #QMessageBox.information(None, "Error", traceback.format_exc())
             finally:
-                print "Completed script: %s" % script_name
+                print("Completed script: %s" % script_name)
                 sys.stdout = self.old_stdout
                 if self.log_output:
                     self.log_file.flush()
@@ -770,7 +772,7 @@ class ScriptRunner:
                 __import__(user_module)
             script_args = inspect.getargspec(
                 sys.modules[user_module].run_script)
-            #print "script_args is ", script_args
+            #print("script_args is ", script_args)
 
             # check to see if we have args in addition to 'iface'
             if len(script_args.args) > 1 or script_args.keywords is not None:
@@ -795,7 +797,7 @@ class ScriptRunner:
             try:
                 self.log_file.write(text)
             except:
-                print traceback.format_exc()
+                print(traceback.format_exc())
             finally:
                 sys.__stdout__.flush()
 

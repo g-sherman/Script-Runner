@@ -15,11 +15,11 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from mainwindow import Ui_MainWindow
 
 
-class ScriptRunnerMainWindow(QtGui.QMainWindow):
+class ScriptRunnerMainWindow(QtWidgets.QMainWindow):
     """
     This class initializes the main window for Script Runner
     """

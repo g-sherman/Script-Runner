@@ -1,5 +1,6 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from qgis.core import *
 
@@ -85,7 +86,7 @@ class ArgsDialog(QDialog):
             else:
                 arg_map['keywords'] = None
 
-            print "arg_map returned from argsdialog", arg_map
+            print("arg_map returned from argsdialog", arg_map)
             # return a containing the args
             return arg_map
         else:

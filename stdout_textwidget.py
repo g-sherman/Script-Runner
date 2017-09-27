@@ -16,13 +16,14 @@ the Free Software Foundation; either version 2 of the License, or
 """
 import sys
 
-#from PyQt4 import QtCore, QtGui
-#from PyQt4.QtCore import Qt, pyqtSignal, QString
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-#from PyQt4.QtGui import QTextCursor
+#from PyQt5 import QtCore, QtGui
+#from PyQt5.QtCore import Qt, pyqtSignal, QString
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+#from PyQt5.QtGui import QTextCursor
 
-import __init__ as plugin_metatdata
+#import __init__ as plugin_metatdata
 
 
 class StdoutTextEdit(QTextEdit):
@@ -36,7 +37,7 @@ class StdoutTextEdit(QTextEdit):
         Set up the user interface from Designer.
         """
         QTextEdit.__init__(self)
-        self.setPlainText("Script Runner %s\n" % plugin_metatdata.version())
+        self.setPlainText("Script Runner %s\n" % "3.0.1")
         # cursor for the StdoutTextEdit
         self.cursor = QTextCursor(self.textCursor())
         self.setTextCursor(self.cursor)
