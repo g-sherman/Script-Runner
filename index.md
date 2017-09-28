@@ -149,6 +149,26 @@ A Simple Script
 
 This simple script contains only a *run\_script* function:
 
+``` sourceCode
+""" Load a layer and change the fill color to red. """
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from qgis.core import *
+from qgis.gui import *
+
+
+def run_script(iface):
+    project = QgsProject.instance()
+    project.removeAllMapLayers()
+    wb = QgsVectorLayer('/Users/gsherman/Downloads/pyqgis_data/world_borders.shp', 'world_borders', 'ogr')
+    project.instance().addMapLayer(wb)
+    renderer = wb.renderer()
+    symb = renderer.symbol()
+    symb.setColor(QColor(Qt.red))
+    wb.triggerRepaint()
+    iface.layerTreeView().refreshLayerSymbology(wb.id())
+```
+
 When executed by Script Runner, the script removes any layers currently on the map, then loads the world\_borders shapefile, sets its fill color to red, and updates the map canvas and the legend. The *run\_script* function does all the work. You could expand this script by adding additional functions that are called from *run\_script*.
 
 A Script with a Class
@@ -156,12 +176,90 @@ A Script with a Class
 
 This script uses a class that is initialized from the *run\_script* function to load some layers:
 
+``` sourceCode
+"""Load all shapefiles in a given directory.  """
+from glob import glob
+from os import path
+
+from qgis.core import *
+from qgis.gui import *
+import qgis.utils
+
+
+class Loader:
+    def __init__(self, iface):
+        """Initialize using the qgis.utils.iface
+        object passed from the console.
+        """
+
+        self.iface = iface  #qgis.utils.iface
+        self.if2 = self.iface
+        #print("iface in __init__ is %" % self.iface)
+
+    def load_shapefiles(self, shp_path):
+        """Load all shapefiles found in shp_path"""
+        print("Loading shapes from %s" % path.join(shp_path, "*.shp"))
+        shps = glob(path.join(shp_path, "*.shp"))
+        for shp in shps:
+            (shpdir, shpfile) = path.split(shp)
+            print("Loading %s" % shpfile)
+            print("if2 is %s" % type(self.if2))
+            lyr = self.iface.addVectorLayer(shp, shpfile, 'ogr')
+            #QgsMapLayerRegistry.instance().addMapLayer(lyr)
+
+
+def run_script(iface):
+    ldr = Loader(iface)
+    print("in run script")
+    print("iface in run_script is %s" % iface)
+    print("Loading all shapefiles in /dev1/gis_data/qgis_sample_data/shapefiles")
+    ldr.load_shapefiles('/Users/gsherman/Downloads')
+```
+
 In this example, the *run\_script* function creates an instance (ldr) of a class named *Loader* that is defined in the same source file. It then calls a method in the *Loader* class named *load\_shapefiles* to do something useful---in this case, load all the shapefiles in a specified directory.
 
 A Script that Accepts Arguments
 -------------------------------
 
 This script accepts three arguments in addition to iface. The first two are mandatory arguments and the third (shape\_path) is a keyword argument:
+
+
+``` sourceCode
+"""Load all shapefiles in a given directory."""
+from glob import glob
+from os import path
+from qgis.core import *
+from qgis.gui import *
+import qgis.utils
+
+
+class Loader:
+    def __init__(self, iface):
+        """Initialize using the qgis.utils.iface
+        object passed from the console.
+
+        """
+        self.iface = qgis.utils.iface
+
+    def load_shapefiles(self, shp_path):
+        """Load all shapefiles found in shp_path"""
+        print("Loading shapes from %s" % path.join(shp_path, "*.shp"))
+        shps = glob(path.join(shp_path, "*.shp"))
+        for shp in shps:
+            (shpdir, shpfile) = path.split(shp)
+            print("Loading %s" % shpfile)
+            lyr = QgsVectorLayer(shp, shpfile, 'ogr')
+            QgsProject.instance().addMapLayer(lyr)
+
+
+def run_script(iface, data_path, buffer_size, **myargs):
+    ldr = Loader(iface)
+    print("Loading all shapefiles in %s" % myargs['shape_path'])
+    ldr.load_shapefiles(myargs['shape_path'])
+    # Do something with data_path and buffer_size...
+    print("data_path = %s" % data_path)
+    print("buffer_size = %s" % buffer_size)
+```
 
 These examples are minimalistic---they don't do error checking in a number of places, such as checking to see if a QgsVectorLayer is valid or if needed arguments were actually passed to the script. Don't take the scripts as examples of complete, solid code.
 
