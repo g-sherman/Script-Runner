@@ -184,6 +184,12 @@ def htmlabout():
    </ul>
        <h4>Changelog</h4>
        <ul>
+       <li>3.0.1</li>
+       <ul>
+       <li>Initial port to QGIS 3 API</li>
+       </ul>
+       </ul>
+       <ul>
        <li>2.0.1</li>
        <ul>
        <li>New icons and bug fixes</li>

@@ -21,6 +21,7 @@ import subprocess
 import re
 import inspect
 import datetime
+import importlib
 
 if platform.system() == 'Windows':
     import win32api
@@ -49,9 +50,12 @@ from .syntax import *
 # ars dialog
 from .argsdialog import ArgsDialog
 
+
 # for remote pydev debug (remove prior to production)
 #import debug_settings
 
+
+VERSION = "3.0.1"
 
 class ScriptRunner:
 
@@ -92,7 +96,7 @@ class ScriptRunner:
         """
         # create the mainwindow
         self.mw = ScriptRunnerMainWindow()
-        self.mw.setWindowTitle("Script Runner Version 2.0.1")
+        self.mw.setWindowTitle("Script Runner Version {}".format(VERSION))
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
         #if self.settings.contains("ScriptRunner/scripts"):
@@ -378,7 +382,7 @@ class ScriptRunner:
                 (script_dir, script_name) = os.path.split(str(script))
                 (user_module, ext) = os.path.splitext(script_name)
                 if user_module in sys.modules:
-                    reload(sys.modules[user_module])
+                    importlib.reload(sys.modules[user_module])
                     self.main_window.statusbar.showMessage(
                         "Reloaded script: %s" % script)
                     (has_run_method, uses_args) = self.have_run_method(script)
@@ -698,13 +702,14 @@ class ScriptRunner:
 
     def new_script(self):
         # get the path
-        script = QFileDialog.getSaveFileName(None, "Create a New Python Script",
-                                             "", "Python scripts (*.py)")
+        (script, ext) = QFileDialog.getSaveFileName(None, "Create a New Python Script",
+                                                    "", "Python scripts (*.py)")
         if script:
             # create the script
             self.add_empty_script(script)
 
     def add_empty_script(self, script):
+        print("Empty script is {}".format(script))
         (path, ext) = os.path.splitext(script)
         if ext != ".py":
             script += ".py"

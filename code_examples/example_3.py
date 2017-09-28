@@ -16,19 +16,19 @@ class Loader:
 
     def load_shapefiles(self, shp_path):
         """Load all shapefiles found in shp_path"""
-        print "Loading shapes from %s" % path.join(shp_path, "*.shp")
+        print("Loading shapes from %s" % path.join(shp_path, "*.shp"))
         shps = glob(path.join(shp_path, "*.shp"))
         for shp in shps:
             (shpdir, shpfile) = path.split(shp)
-            print "Loading %s" % shpfile
+            print("Loading %s" % shpfile)
             lyr = QgsVectorLayer(shp, shpfile, 'ogr')
-            QgsMapLayerRegistry.instance().addMapLayer(lyr)
+            QgsProject.instance().addMapLayer(lyr)
 
 
 def run_script(iface, data_path, buffer_size, **myargs):
     ldr = Loader(iface)
-    print "Loading all shapefiles in %s" % myargs['shape_path']
+    print("Loading all shapefiles in %s" % myargs['shape_path'])
     ldr.load_shapefiles(myargs['shape_path'])
     # Do something with data_path and buffer_size...
-    print "data_path = %s" % data_path
-    print "buffer_size = %s" % buffer_size
+    print("data_path = %s" % data_path)
+    print("buffer_size = %s" % buffer_size)
