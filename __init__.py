@@ -15,7 +15,6 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-
 def classFactory(iface):
     """
     Load ScriptRunner class from file ScriptRunner, passing
@@ -23,7 +22,3 @@ def classFactory(iface):
     """
     from .scriptrunner import ScriptRunner
     return ScriptRunner(iface)
-
-
-def version():
-    return "3.0.1"

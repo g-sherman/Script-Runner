@@ -5,36 +5,24 @@
 
 # This file should be included when you package your plugin.
 
-# Mandatory items:
-
-
 [general]
-name=ScriptRunner
+name=ScriptRunner 3
 about=Load and run scripts
+description=Run scripts to automate QGIS tasks
+version=3.0.2
 qgisMinimumVersion=2.99
 qgisMaximumVersion=3.99
-description=Run scripts to automate QGIS tasks
-version=3.0.1
-author=GeoApt LLC
-email=gsherman@geoapt.com
 
-# end of mandatory metadata
-
-# Optional items:
-
-# Uncomment the following line and add your changelog entries:
 changelog=Port to QGIS 3 API
-
-# tags are comma separated with spaces allowed
-tags=python,scripts
 
 homepage=http://spatialgalaxy.net/?p=807
 tracker=http://hub.qgis.org/projects/scriptrunner
 repository=https://github.com/g-sherman/Script-Runner
+tags=python,scripts
 icon=icon.png
-# experimental flag
-experimental=False
 
-# deprecated flag (applies to the whole plugin, not just a single version
+experimental=False
 deprecated=False
 
+author=GeoApt LLC
+email=gsherman@geoapt.com

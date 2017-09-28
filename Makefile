@@ -22,7 +22,7 @@
 #DOTQGIS = .qgis3
 DOTQGIS = Library/Application\ Support/QGIS/QGIS3/profiles/default/
 WORKDIR = work_dir
-PLUGINNAME = scriptrunner
+PLUGINNAME = scriptrunner3
 
 PY_FILES = scriptrunner.py scriptrunner_mainwindow.py __init__.py preferences_dialog.py traceback_dialog.py scriptrunner_help.py stdout_textwidget.py syntax.py argsdialog.py
 
