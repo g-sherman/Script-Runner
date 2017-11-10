@@ -150,13 +150,13 @@ def htmlabout():
     """
     return """<html>
     <body>
-    <h3>Script Runner - Version 2.0.1</h3>
+    <h3>Script Runner - Version 3.0.2</h3>
     <p>
-    Script Runner lets you run Python scripts in QGIS to automate and perform
+    Script Runner lets you run Python scripts in QGIS 3 to automate and perform
     repetitive tasks.
     </p>
     <p>
-    Author: Gary Sherman, Copyright &copy; 2012-2013 GeoApt LLC</p>
+    Author: Gary Sherman, Copyright &copy; 2012-2017 GeoApt LLC</p>
     <p>
     Email:
     <a href="mailto:gsherman@geoapt.com?Subject=Script Runner">
@@ -183,6 +183,12 @@ def htmlabout():
     example on the SciPres wiki."</li>
    </ul>
        <h4>Changelog</h4>
+       <ul>
+       <li>3.0.2</li>
+       <ul>
+       <li>Update about text</li>
+       </ul>
+       </ul>
        <ul>
        <li>3.0.1</li>
        <ul>
