@@ -163,6 +163,11 @@ def htmlabout():
     gsherman@geoapt.com</>
     </p>
     <p>
+    Home page: <a href="http://g-sherman.github.io/Script-Runner/">
+    http://g-sherman.github.io/Script-Runner/
+    </a>
+    </p>
+    <p>
     Repository: <a href="https://github.com/g-sherman/Script-Runner">
     https://github.com/g-sherman/Script-Runner</a>
     </p>

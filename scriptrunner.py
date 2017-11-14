@@ -69,8 +69,8 @@ class ScriptRunner:
         Save reference to the QGIS interface
         """
         self.iface = iface
-        self.plugin_dir = os.path.dirname(__file__)
-
+        self.plugin_dir = os.path.join(QgsApplication.qgisSettingsDirPath(),
+                                       'python', 'plugins', 'scriptrunner3')
         self.settings = QSettings()
         self.fetch_settings()
         if self.log_output:
@@ -85,9 +85,6 @@ class ScriptRunner:
                                               "scriptrunner.log"), mode)
         self.last_args = ''
 
-        self.plugin_dir = QFileInfo(
-            QgsApplication.qgisUserDatabaseFilePath()).path() + \
-            "/python/plugins/scriptrunner"
 
     def initGui(self):
         """
