@@ -15,11 +15,13 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QSettings
+from PyQt5.QtWidgets import QMainWindow
+
 from .mainwindow import Ui_MainWindow
 
 
-class ScriptRunnerMainWindow(QtWidgets.QMainWindow):
+class ScriptRunnerMainWindow(QMainWindow):
     """
     This class initializes the main window for Script Runner
     """
@@ -28,15 +30,13 @@ class ScriptRunnerMainWindow(QtWidgets.QMainWindow):
         """
         Set up the user interface from Designer.
         """
-        QtWidgets.QMainWindow.__init__(self)
+        QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.settings = QtCore.QSettings()
+        self.settings = QSettings()
 
     def closeEvent(self, event):
         self.settings.setValue("ScriptRunner/geometry", self.saveGeometry())
-        #settings.setValue("ScriptRunner/window_state", self.saveState())
-        #self.closeEvent(event)
 
     def moveEvent(self, event):
         self.settings.setValue("ScriptRunner/geometry", self.saveGeometry())

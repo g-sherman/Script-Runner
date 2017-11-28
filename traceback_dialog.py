@@ -15,12 +15,11 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog
 from .ui_traceback import Ui_TracebackDialog
 
 
-class TracebackDialog(QtWidgets.QDialog):
+class TracebackDialog(QDialog):
     """
     This class initializes the traceback dialog for Script Runner
     """
@@ -29,6 +28,6 @@ class TracebackDialog(QtWidgets.QDialog):
         """
         Set up the user interface from Designer.
         """
-        QtWidgets.QDialog.__init__(self)
+        QDialog.__init__(self)
         self.ui = Ui_TracebackDialog()
         self.ui.setupUi(self)

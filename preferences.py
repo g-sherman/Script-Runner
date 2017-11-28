@@ -15,11 +15,11 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMainWindow
 from mainwindow import Ui_MainWindow
 
 
-class ScriptRunnerMainWindow(QtWidgets.QMainWindow):
+class ScriptRunnerMainWindow(QMainWindow):
     """
     This class initializes the main window for Script Runner
     """
@@ -28,6 +28,6 @@ class ScriptRunnerMainWindow(QtWidgets.QMainWindow):
         """
         Set up the user interface from Designer.
         """
-        QtGui.QMainWindow.__init__(self)
+        QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)

@@ -27,14 +27,17 @@ if platform.system() == 'Windows':
     import win32api
 
 # Import the PyQt and QGIS libraries
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt, QByteArray, QSettings, QSize, QUrl
+from PyQt5.QtGui import QIcon, QTextCursor, QColor, QDesktopServices, QFont
+from PyQt5.QtWidgets import (QAction, QMessageBox, QFileDialog, QDialog, QMenu, QSplitter, QTabWidget,
+                             QDockWidget, QListWidget, QListWidgetItem, QToolBar, QHBoxLayout, QTextBrowser)
 
-from qgis.core import *
-#from qgis import console
+from PyQt5.Qsci import QsciLexerPython, QsciScintilla
+
+from qgis.core import QgsApplication
+
 # Initialize Qt resources from file resources.py
-from .resources import *
+from .resources import *  # noqa
 # Import the code for the dialog
 from .scriptrunner_mainwindow import ScriptRunnerMainWindow
 # Import the preferenes dialog
@@ -44,18 +47,18 @@ from .traceback_dialog import TracebackDialog
 # Import the stdout dialog
 from .stdout_textwidget import StdoutTextEdit
 # Import the help module
-from .scriptrunner_help import *
-#from highlighter import *
-from .syntax import *
+from .scriptrunner_help import htmlabout
 # ars dialog
 from .argsdialog import ArgsDialog
-
+# class for holding individual buffer contents
+from .edit_buffer import EditBuffer
 
 # for remote pydev debug (remove prior to production)
-#import debug_settings
+# import debug_settings
 
 
 VERSION = "3.0.2"
+
 
 class ScriptRunner:
 
@@ -63,6 +66,10 @@ class ScriptRunner:
     ScriptRunner is the main plugin class that initializes the QGIS
     plugin, initializes the GUI, and performs the work.
     """
+
+    is_dirty = False
+    editors = {}
+    changing_scripts = False
 
     def __init__(self, iface):
         """
@@ -84,7 +91,7 @@ class ScriptRunner:
             self.log_file = open(os.path.join(str(self.log_dir),
                                               "scriptrunner.log"), mode)
         self.last_args = ''
-
+        self.firstload = True
 
     def initGui(self):
         """
@@ -96,9 +103,9 @@ class ScriptRunner:
         self.mw.setWindowTitle("Script Runner Version {}".format(VERSION))
         self.restore_window_position()
         # fetch the list of stored scripts from user setting
-        #if self.settings.contains("ScriptRunner/scripts"):
+        # if self.settings.contains("ScriptRunner/scripts"):
         stored_scripts = self.settings.value("ScriptRunner/scripts")
-        #else:
+        # else:
         if not stored_scripts:
             stored_scripts = []
         self.list_of_scripts = stored_scripts
@@ -118,9 +125,9 @@ class ScriptRunner:
         self.toolbar = self.main_window.toolBar
         self.toolbar.setIconSize(QSize(30, 30))
         self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
-        #self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        # self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-        ## Action setup
+        # Action setup
 
         # action for creating a new blank script
         self.new_action = QAction(QIcon(
@@ -142,10 +149,10 @@ class ScriptRunner:
         self.run_action.triggered.connect(self.dispatch_script)
 
         # action for running a script with arguments - deprecated
-        #self.run_with_args_action = QAction(QIcon(":plugins/scriptrunner/run_args_icon"),
+        # self.run_with_args_action = QAction(QIcon(":plugins/scriptrunner/run_args_icon"),
         #                                    "Run script with arguments", self.mw)
-        #self.toolbar.addAction(self.run_with_args_action)
-        #self.run_with_args_action.triggered.connect(self.run_with_args)
+        # self.toolbar.addAction(self.run_with_args_action)
+        # self.run_with_args_action.triggered.connect(self.run_with_args)
 
         # action for getting info about a script
         self.info_action = QAction(QIcon(":plugins/scriptrunner/info_icon"),
@@ -201,6 +208,52 @@ class ScriptRunner:
             "Edit script in external editor", self.mw)
         self.edit_action.triggered.connect(self.edit_script)
 
+        # Setup the editor toolbar
+        self.editor_toolbar = QToolBar()
+        self.mw.addToolBar(self.editor_toolbar)
+
+        self.edit_save_action = QAction(
+            QIcon(":/plugins/scriptrunner/edit_save_icon"),
+            "Save script",
+            self.mw)
+        self.edit_save_action.triggered.connect(self.edit_save)
+
+        self.edit_copy_action = QAction(
+            QIcon(":/plugins/scriptrunner/edit_copy_icon"),
+            "Copy",
+            self.mw)
+        self.edit_copy_action.triggered.connect(self.edit_copy)
+
+        self.edit_paste_action = QAction(
+            QIcon(":/plugins/scriptrunner/edit_paste_icon"),
+            "Paste",
+            self.mw)
+        self.edit_paste_action.triggered.connect(self.edit_paste)
+
+        self.edit_cut_action = QAction(
+            QIcon(":/plugins/scriptrunner/edit_cut_icon"),
+            "Cut",
+            self.mw)
+        self.edit_cut_action.triggered.connect(self.edit_cut)
+        self.edit_undo_action = QAction(
+            QIcon(":/plugins/scriptrunner/edit_undo_icon"),
+            "Undo",
+            self.mw)
+        self.edit_undo_action.triggered.connect(self.edit_undo)
+
+        self.edit_redo_action = QAction(
+            QIcon(":/plugins/scriptrunner/edit_redo_icon"),
+            "Redo",
+            self.mw)
+        self.edit_redo_action.triggered.connect(self.edit_redo)
+
+        self.editor_toolbar.addAction(self.edit_save_action)
+        self.editor_toolbar.addAction(self.edit_copy_action)
+        self.editor_toolbar.addAction(self.edit_paste_action)
+        self.editor_toolbar.addAction(self.edit_cut_action)
+        self.editor_toolbar.addAction(self.edit_undo_action)
+        self.editor_toolbar.addAction(self.edit_redo_action)
+
         # setup the splitter and list/text browser and mainwindow layout
         self.layout = QHBoxLayout(self.main_window.frame)
         self.splitter = QSplitter(self.main_window.frame)
@@ -209,15 +262,15 @@ class ScriptRunner:
         self.scriptList = QListWidget()
         self.scriptList.setSortingEnabled(True)
         # connect double click to info slot
-        #self.scriptList.itemDoubleClicked.connect(self.item_info)
+        # self.scriptList.itemDoubleClicked.connect(self.item_info)
         self.scriptList.currentItemChanged.connect(self.current_script_changed)
         self.scriptList.customContextMenuRequested.connect(
             self.show_context_menu)
         self.scriptList.setContextMenuPolicy(Qt.CustomContextMenu)
-        ## Context menu for the scriptList
+        # Context menu for the scriptList
         self.context_menu = QMenu(self.scriptList)
         self.context_menu.addAction(self.run_action)
-        #self.context_menu.addAction(self.run_with_args_action)
+        # self.context_menu.addAction(self.run_with_args_action)
         self.context_menu.addAction(self.remove_action)
         self.context_menu.addAction(self.reload_action)
         self.context_menu.addAction(self.edit_action)
@@ -230,13 +283,25 @@ class ScriptRunner:
         self.splitter.addWidget(self.scriptList)
 
         self.tabWidget = QTabWidget()
+        self.tabWidget.currentChanged.connect(self.tab_changed)
+
+        self.editor = QsciScintilla()
+        self.editor.setTabWidth(4)
+        self.editor.SendScintilla(self.editor.SCI_SETHSCROLLBAR, 0)
+        self.editor.textChanged.connect(self.dirty_state)
+        self.editor.modificationChanged.connect(self.text_modified)
+        self.lexer = QsciLexerPython(self.editor)
+        font = QFont()
+        font.setFamily('Source Code Pro')
+        font.setFixedPitch(True)
+        font.setPointSize(13)
+        self.lexer.setFont(font)
+        self.editor.setLexer(self.lexer)
+        self.tabWidget.addTab(self.editor, "Source")
+        # highlighter = PythonHighlighter(self.textBrowserSource.document())
 
         self.textBrowser = QTextBrowser()
         self.tabWidget.addTab(self.textBrowser, "Info")
-
-        self.textBrowserSource = QTextBrowser()
-        self.tabWidget.addTab(self.textBrowserSource, "Source")
-        highlighter = PythonHighlighter(self.textBrowserSource.document())
 
         self.textBrowserAbout = QTextBrowser()
         self.textBrowserAbout.setHtml(htmlabout())
@@ -290,10 +355,9 @@ class ScriptRunner:
                         "list of stored scripts.\n" % script, True)
                     pop_list.append(script)
             for script in pop_list:
-                #self.stdout_textedit.write("Removed %s from the list of "
+                # self.stdout_textedit.write("Removed %s from the list of "
                 #  "loaded scripts.\n" % script)
-                self.list_of_scripts.pop(
-                   self.list_of_scripts.index(script))
+                self.list_of_scripts.pop(self.list_of_scripts.index(script))
                 self.update_settings()
 
             self.stdout_textedit.ensureCursorVisible()
@@ -309,7 +373,7 @@ class ScriptRunner:
 
     def get_script_path(self):
         (script, ext) = QFileDialog.getOpenFileName(None, "Add a Python Script",
-                                             "", "Python scripts (*.py)")
+                                                    "", "Python scripts (*.py)")
         if script:
             if os.path.exists(script):
                 self.add_script(script)
@@ -320,7 +384,7 @@ class ScriptRunner:
                     "The script %s does not exist. Would you "
                     "you like to create a basic template to "
                     "work with?" % os.path.basename(script),
-                    QMessageBox.Yes | QMessageBox.No, 
+                    QMessageBox.Yes | QMessageBox.No,
                     QMessageBox.Yes)
                 if choice == QMessageBox.Yes:
                     self.add_empty_script(script)
@@ -367,7 +431,6 @@ class ScriptRunner:
                 self.update_settings()
                 self.scriptList.takeItem(self.scriptList.currentRow())
 
-
     def reload_script(self):
         """
         Reload the currently selected script.
@@ -385,13 +448,14 @@ class ScriptRunner:
                     (has_run_method, uses_args) = self.have_run_method(script)
                     if has_run_method:
                         # set state of the run with args button
-                        #self.run_with_args_action.setEnabled(uses_args)
+                        # self.run_with_args_action.setEnabled(uses_args)
                         if uses_args:
                             # has keyword args: add ** to the name
                             item.setText("%s**" % script_name)
                         else:
+                            # self.editors[script] = EditBuffer()
                             item.setText(script_name)
-                        self.info()
+                        # self.info()
                     else:
                         QMessageBox.warning(
                             None, "Missing run_script",
@@ -405,8 +469,7 @@ class ScriptRunner:
                         been imported yet""" % user_module)
             except Exception as e:
                 QMessageBox.warning(None, "Error Fetching Script Info",
-                  "There was an error reloading %s because of the following error :\n%s" % (script, str(e)))
-
+                                    "There was an error reloading %s because of the following error :\n%s" % (script, str(e)))
 
     def info(self):
         """
@@ -421,7 +484,7 @@ class ScriptRunner:
                 (user_module, ext) = os.path.splitext(script_name)
                 if script_dir not in sys.path:
                     sys.path.append(script_dir)
-                if not user_module in sys.modules:
+                if user_module not in sys.modules:
                     __import__(user_module)
 
                 # add the doc string to the info page
@@ -434,11 +497,29 @@ class ScriptRunner:
                 html = "<h4>%s</h4><h4>Doc String:</h4>%s" % (script, doc_string)
 
                 # populate the source tab
-                highlighter = PythonHighlighter(self.textBrowserSource.document())
+                # highlighter = PythonHighlighter(self.textBrowserSource.document())
                 source = self.get_source(script)
+                self.stdout_textedit.write("Got source for {}\n".format(script))
                 if source:
-                    self.textBrowserSource.setPlainText(self.get_source(script))
-                    #self.textBrowserSource.setHtml(self.get_source(script)) - deprecated
+                    if script not in self.editors:
+                        buffer = EditBuffer(source)
+                        buffer.dirty = False
+                        self.editors[script] = buffer
+                        self.initial_load = True
+                    else:
+                        self.initial_load = False
+                        buffer = self.editors[script]
+                    self.stdout_textedit.write("Setting Scintilla text to buffer\n")
+                    self.editor.setText(buffer.text)
+                    if not buffer.dirty or self.initial_load or self.reload:
+                        self.initial_load = False
+                        self.reload = False
+                        self.stdout_textedit.write("Setting save point\n")
+                        self.editor.SendScintilla(self.editor.SCI_SETSAVEPOINT)
+                        self.tabWidget.setTabText(0, "Source")
+                    else:
+                        self.tabWidget.setTabText(0, "Source <modified>")
+                        # self.textBrowserSource.setHtml(self.get_source(script)) - deprecated
 
                     classes = inspect.getmembers(
                         sys.modules[user_module], inspect.isclass)
@@ -467,17 +548,20 @@ class ScriptRunner:
                     html += "</ul>"
 
                     self.textBrowser.setHtml(html)
-                    #self.tabWidget.setCurrentIndex(0)
+                    # self.tabWidget.setCurrentIndex(0)
                 else:
                     QMessageBox.warning(
-                            None,
-                            "%s is Missing" % script,
-                            "The script %s has disappeared. Perhaps it was "
-                            "moved or deleted?" % script)
+                        None,
+                        "%s is Missing" % script,
+                        "The script %s has disappeared. Perhaps it was "
+                        "moved or deleted?" % script)
             except Exception as e:
                 QMessageBox.warning(None, "Error Fetching Script Info",
-                  "There was an error getting the information for %s because of the following error :\n%s" % (script, str(e)))
-
+                                    "There was an error getting the information for %s because of the following error :\n{}".format(
+                                        script, str(e)))
+            finally:
+                for element in traceback.format_stack():
+                    print(element)
 
     def get_source(self, script):
         try:
@@ -500,8 +584,8 @@ class ScriptRunner:
     def run_with_args(self):
         # get the args
         script_args = self.get_script_args()
-        #print("script args:"
-        #print script_args
+        # print("script args:"
+        # print script_args
 
         if script_args is not None:
             args_dlg = ArgsDialog(self.get_script_args(), self.script_name())
@@ -522,7 +606,11 @@ class ScriptRunner:
         """
         # get the selected item from the list
         item = self.scriptList.currentItem()
-        #settrace()
+        if self.editors[item.toolTip()].dirty:
+            button = QMessageBox.question(None, 'Script Modified', 'Script has been modified. Save it before running?')
+            if button == QMessageBox.Yes:
+                self.edit_save()
+        # settrace()
         if item is not None:
             script = item.toolTip()
             self.main_window.statusbar.showMessage(
@@ -547,14 +635,14 @@ class ScriptRunner:
                     self.stdout.setPlainText('')
                 print("----------%s----------" % datetime.datetime.now())
                 print("Running %s in: %s" % (script_name, script_dir))
-                #print user_args  # for debug
+                # print user_args  # for debug
                 print("user_args type: %s" % type(user_args))
                 print("iface type: %s" % type(self.iface))
                 if type(user_args) is not dict:
                     user_script.run_script(self.iface)
                 else:
                     func = "user_script.run_script(self.iface, "
-                    #func += ",' ".join(user_args['args'])
+                    # func += ",' ".join(user_args['args'])
                     for ar in user_args['args']:
                         func += "%s, " % ar
                     func = func[:-2]
@@ -564,7 +652,7 @@ class ScriptRunner:
                         func += ", **kwargs)"
                     else:
                         func += ")"
-                    #print("func is %s" % func)
+                    # print("func is %s" % func)
                     exec(func)
             except:
                 # show traceback
@@ -574,9 +662,9 @@ class ScriptRunner:
                 tb.ui.teTraceback.setText(traceback.format_exc())
                 tb.show()
                 tb.exec_()
-                abnormal_exit = True
+                abnormal_exit = True # noqa
                 print("\n%s\nAbnormal termination" % self.last_traceback)
-                #QMessageBox.information(None, "Error", traceback.format_exc())
+                # QMessageBox.information(None, "Error", traceback.format_exc())
             finally:
                 print("Completed script: %s" % script_name)
                 sys.stdout = self.old_stdout
@@ -607,31 +695,38 @@ class ScriptRunner:
                 # check to see if this script uses keyword args
                 parts = line.split(',')
                 if len(parts) > 1:
-                    #uses_args =  line.find('**') != -1
+                    # uses_args =  line.find('**') != -1
                     uses_args = True
                     break
         script.close()
         return run_method, uses_args
 
-    def current_script_changed(self):
-        # check to see if it uses args
-        item = self.scriptList.currentItem()
-        if item:
-            label = str(item.text())
+    def current_script_changed(self, current, previous):
+        # disconnect the slot until we get the editor loaded
+        self.editor.textChanged.disconnect()
+
+        try:
+            if previous:
+                if previous.toolTip() in self.editors:
+                    self.editors[previous.toolTip()].text = self.editor.text()
+                    self.changing_scripts = True
+            # label = str(item.text())
             if self.auto_display:
                 self.info()
-        else:
-            # clear the info and source tabs
-            self.textBrowserSource.setPlainText('')
-            self.textBrowser.setPlainText('')
-
+            self.editor.textChanged.connect(self.dirty_state)
+            # else:
+            #    # clear the info and source tabs
+            #    self.editor.setText('')
+            #    self.textBrowser.setPlainText('')
+        except:
+            pass
 
     def update_settings(self):
         """
         Update the setting for the plugin---at present just
         the list of scripts.
         """
-        #self.stdout_textedit.write("Update settings using %s" % str(self.list_of_scripts), True)
+        # self.stdout_textedit.write("Update settings using %s" % str(self.list_of_scripts), True)
 
         self.settings.setValue("ScriptRunner/scripts",
                                self.list_of_scripts)
@@ -684,8 +779,8 @@ class ScriptRunner:
         log_file.close()
 
     def show_context_menu(self, pos):
-        #self.context_menu.popup(point)
-        #QMessageBox.information(None, "Popup Menu", "Pop it up")
+        # self.context_menu.popup(point)
+        # QMessageBox.information(None, "Popup Menu", "Pop it up")
         self.context_menu.exec_(self.scriptList.mapToGlobal(pos))
 
     def toggle_console__(self):
@@ -738,8 +833,7 @@ class ScriptRunner:
                         else:
                             editor = str(self.custom_editor)
                         # use subprocess to call custom editor
-                        subprocess.Popen([str(self.custom_editor),
-                                          str(script)])
+                        subprocess.Popen([str(editor), str(script)])
                 except:
                     QMessageBox.critical(
                         None, "Error Opening Editor",
@@ -770,11 +864,11 @@ class ScriptRunner:
             (user_module, ext) = os.path.splitext(script_name)
             if script_dir not in sys.path:
                 sys.path.append(script_dir)
-            if not user_module in sys.modules:
+            if user_module not in sys.modules:
                 __import__(user_module)
             script_args = inspect.getargspec(
                 sys.modules[user_module].run_script)
-            #print("script_args is ", script_args)
+            # print("script_args is ", script_args)
 
             # check to see if we have args in addition to 'iface'
             if len(script_args.args) > 1 or script_args.keywords is not None:
@@ -792,9 +886,9 @@ class ScriptRunner:
         else:
             return None
 
-    #@pyqtSlot(str)
+    # @pyqtSlot(str)
     def output_posted(self, text):
-        #QMessageBox.information(None, "New Stdout", text)
+        # QMessageBox.information(None, "New Stdout", text)
         if self.log_output:
             try:
                 self.log_file.write(text)
@@ -805,10 +899,87 @@ class ScriptRunner:
 
     def restore_window_position(self):
         # TODO fix after sorting out how to do it @ api v2
-        #if self.settings.contains("ScriptRunner/geometry"):
+        # if self.settings.contains("ScriptRunner/geometry"):
         self.mw.restoreGeometry(
             self.settings.value("ScriptRunner/geometry", QByteArray(), type=QByteArray))
 
     def open_help(self):
         help_url = QUrl("file:///%s/help/index.html" % self.plugin_dir)
         QDesktopServices.openUrl(help_url)
+
+    def edit_copy(self):
+        # Paste text in the clipboard
+        self.editor.copy()
+
+    def edit_paste(self):
+        # Paste text in the clipboard
+        self.editor.paste()
+
+    def edit_cut(self):
+        # Paste text in the clipboard
+        self.editor.SendScintilla(self.editor.SCI_CUT)
+
+    def edit_undo(self):
+        # Paste text in the clipboard
+        self.editor.SendScintilla(self.editor.SCI_UNDO)
+        if not self.editor.isModified:
+            self.tabWidget.setTabText(0, "Source")
+
+    def edit_redo(self):
+        # Paste text in the clipboard
+        self.editor.SendScintilla(self.editor.SCI_REDO)
+
+    def edit_save(self):
+        item = self.scriptList.currentItem()
+        if item is not None:
+            try:
+                script_path = item.toolTip()
+                script = open(script_path, 'w')
+                script.write(self.editor.text())
+                self.editors[item.toolTip()].dirty = False
+                script.close()
+                self.stdout_textedit.write("Saved {}".format(script_path))
+                item.setForeground(Qt.black)
+                item.setBackground(Qt.white)
+                self.tabWidget.setTabText(0, 'Source')
+                self.editor.SendScintilla(self.editor.SCI_SETSAVEPOINT)
+                self.reload_script()
+            except:
+                self.stdout_textedit.write("Failed to save {}".format(script_path))
+
+    def tab_changed(self, tab):
+        # Disable the editor toolbar unless the scintilla editor is active
+        self.editor_toolbar.setEnabled(tab == 0)
+        # if self.is_dirty:
+        #    # warn of change and see if use wants to save
+        #    button = QMessageBox.question(None, 'Document changed', 'Save it?')
+        #    if button == QMessageBox.Yes:
+        #        self.edit_save()
+        #    self.is_dirty = False
+
+    def dirty_state(self):
+        if not self.changing_scripts:
+            self.stdout_textedit.write("In dirty_state\nTab text is {}".format(self.tabWidget.tabText(0)))
+            # text has been changed
+            item = self.scriptList.currentItem()
+            self.editors[item.toolTip()].dirty = True
+            self.tabWidget.setTabText(0, "Source <modified>")
+            # indicate buffer is dirty
+            self.is_dirty = True
+        else:
+            self.changing_scripts = False
+
+    def text_modified(self, changed):
+        if not self.changing_scripts and not self.initial_load:
+            # text has been changed
+            # self.stdout_textedit.write("Tab text is {}\n".format(self.tabWidget.tabText(0)))
+            if changed:
+                # self.stdout_textedit.write("In text_modified\n")
+                item = self.scriptList.currentItem()
+                self.editors[item.toolTip()].dirty = True
+                item.setBackground(QColor.fromRgb(252, 214, 147))
+                self.tabWidget.setTabText(0, "{}*".format(self.tabWidget.tabText(0)))
+                # indicate buffer is dirty
+                self.is_dirty = True
+        else:
+            self.changing_scripts = False

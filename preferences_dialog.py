@@ -15,12 +15,12 @@ the Free Software Foundation; either version 2 of the License, or
 
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QFileDialog
+from PyQt5.QtCore import Qt, QSettings
 from .ui_preferences import Ui_PrefsDialog
 
 
-class PreferencesDialog(QtWidgets.QDialog):
+class PreferencesDialog(QDialog):
     """
     This class initializes the preferences dialog for Script Runner
     """
@@ -29,7 +29,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         """
         Set up the user interface from Designer.
         """
-        QtWidgets.QDialog.__init__(self)
+        QDialog.__init__(self)
         self.ui = Ui_PrefsDialog()
         self.ui.setupUi(self)
 
@@ -43,7 +43,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         # connect the checkbox state change
         self.ui.cbLogToDisk.stateChanged.connect(self.changed_log_to_disk)
 
-        self.settings = QtCore.QSettings()
+        self.settings = QSettings()
         self.restore_settings()
 
     def restore_settings(self):
@@ -80,14 +80,14 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.changed_log_to_disk(self.ui.cbLogToDisk.checkState())
 
     def set_log_dir(self):
-        self.log_dir = QtGui.QFileDialog.getExistingDirectory(
+        self.log_dir = QFileDialog.getExistingDirectory(
             None, "Select the Directory for your Script Runner Logs", ".")
         if self.log_dir != '':
             # store the log_dir in settings
             self.ui.leLogDirectory.setText(self.log_dir)
 
     def editor_path(self):
-        self.editor_path = QtGui.QFileDialog.getOpenFileName(
+        self.editor_path = QFileDialog.getOpenFileName(
             None, "Select the Application for Editing Scripts", ".")
         if self.editor_path != '':
             # store the log_dir in settings

@@ -14,5 +14,11 @@
         <file alias="exit_icon">resources/exit.png</file>
         <file alias="toggle_icon">resources/toggle_console.png</file>
         <file alias="help_icon">resources/help.png</file>
+        <file alias="edit_save_icon">resources/document-save.png</file>
+        <file alias="edit_copy_icon">resources/edit-copy.png</file>
+        <file alias="edit_paste_icon">resources/edit-paste.png</file>
+        <file alias="edit_cut_icon">resources/edit-cut.png</file>
+        <file alias="edit_undo_icon">resources/edit-undo.png</file>
+        <file alias="edit_redo_icon">resources/edit-redo.png</file>
     </qresource>
 </RCC>

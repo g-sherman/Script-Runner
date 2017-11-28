@@ -16,14 +16,9 @@ the Free Software Foundation; either version 2 of the License, or
 """
 import sys
 
-#from PyQt5 import QtCore, QtGui
-#from PyQt5.QtCore import Qt, pyqtSignal, QString
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-#from PyQt5.QtGui import QTextCursor
-
-#import __init__ as plugin_metatdata
+from PyQt5.QtCore import Qt, pyqtSignal, QCoreApplication
+from PyQt5.QtGui import QColor, QTextCursor
+from PyQt5.QtWidgets import QTextEdit
 
 
 class StdoutTextEdit(QTextEdit):
@@ -43,6 +38,7 @@ class StdoutTextEdit(QTextEdit):
         self.setTextCursor(self.cursor)
 
     def write(self, text, warning=False):
+        """ Write to the stdout widget"""
         cursor = QTextCursor(self.textCursor())
         cursor.movePosition(QTextCursor.End)
         self.setTextCursor(cursor)

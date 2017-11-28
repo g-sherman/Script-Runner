@@ -1,8 +1,8 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QGridLayout, QDialog, QLabel, QLineEdit, QPushButton, QHBoxLayout
 
-from qgis.core import *
+# from qgis.core import *
 
 
 class ArgsDialog(QDialog):
@@ -70,12 +70,12 @@ class ArgsDialog(QDialog):
     def show_dialog(self):
         result = self.exec_()
         if result == 1:
-            #print "fetching results"
+            # print "fetching results"
             arg_values = list()
             arg_map = dict()
             # fetch the args values
             for line_edit in self.arg_map:
-                if line_edit.text() == None:
+                if line_edit.text() is None:
                     arg_values.append(None)
                 else:
                     arg_values.append(str(line_edit.text()))
